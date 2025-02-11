@@ -9,6 +9,7 @@ import org.example.easytable.reservation.dto.response.ReservationGetRes;
 import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,9 +39,19 @@ public class ReservationController {
     public ResponseEntity<List<ReservationGetRes>> getReservation(
             @PathVariable("restaurantId") Long restaurantId
     ) {
-        //TODO : 특정 식당의 예약 조회, 사용자가 가진 예약 조회
+        //TODO : 사용자가 가진 예약 조회, 특정 사용자의 예약 조회(?)
         List<ReservationGetRes> reservation = reservationService.getReservation();
 
         return new ResponseEntity<>(reservation, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{restaurantId}/reservation/{reservationId}")
+    public void deleteReservation(
+            @PathVariable("restaurantId") Long restaurantId,
+            @PathVariable("reservationId") Long reservationId
+    ) {
+
+        reservationService.deleteReservation(restaurantId, reservationId);
+
     }
 }

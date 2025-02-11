@@ -46,10 +46,20 @@ public class ReservationService {
         List<Reservation> reservationList = reservationRepository.findAll();
 
         return reservationList.stream().map(reservation -> new ReservationGetRes(
-                reservation.getMember().getId(),
-                reservation.getRestaurant().getId(),
-                reservation.getReservationTime(),
-                reservation.getStatus()))
+                        reservation.getMember().getId(),
+                        reservation.getRestaurant().getId(),
+                        reservation.getReservationTime(),
+                        reservation.getStatus()))
                 .collect(Collectors.toList());
+    }
+
+    public void deleteReservation(Long restaurantId, Long reservationId) {
+        Reservation foundReservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다"));
+
+        if (!foundReservation.getRestaurant().getId().equals(restaurantId)) {
+            throw new RuntimeException("이 예약은 해당 식당에 속하지 않습니다.");
+        }
+        reservationRepository.delete(foundReservation);
     }
 }
