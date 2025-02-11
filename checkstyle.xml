@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    Checkstyle configuration that checks the Google coding conventions from Google Java Style
+    that can be found at https://google.github.io/styleguide/javaguide.html
+
+    Checkstyle is very configurable. Be sure to read the documentation at
+    http://checkstyle.org (or in your downloaded distribution).
+
+    To completely disable a check, just comment it out or delete it from the file.
+    To suppress certain violations please review suppression filters.
+
+    Authors: Max Vetrenko, Mauryan Kansara, Ruslan Diachenko, Roman Ivanov.
+ -->
+
+
+<module name="Checker">
+    <!-- https://checkstyle.org/config.html#Checker -->
+    <!-- 설정값 지정 -->
+
+    <!-- 검사 대상에 대한 인코딩 형식 지정 -->
+    <property name="charset" value="UTF-8"/>
+
+    <!-- 검사 실패한 항목들을 어떻게 처리할 것인지 설정 -->
+    <!-- 적용 안하고 싶다면 default="ignore" 설정할 것 -->
+    <property name="severity" value="${org.checkstyle.google.severity}" default="warning"/>
+
+    <!-- 검사 적용할 파일 형식 지정 -->
+    <property name="fileExtensions" value="java, properties, xml"/>
+
+    <!-- Excludes all 'module-info.java' files              -->
+    <!-- See https://checkstyle.org/filefilters/index.html -->
+    <!-- 검사에서 제외할 파일 설정 -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$"/>
+    </module>
+
+    <!-- 코드 내의 @SuppressWarnings 어노테이션을 감지해 해당 부분 검사를 적용하지 않도록 설정 -->
+    <module name="SuppressWarningsFilter"/>
+
+    <!-- https://checkstyle.org/filters/suppressionfilter.html -->
+    <!-- 다른 xml 파일 규칙에 따라 특정 Checkstyle 경고를 무시하도록 설정 -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${org.checkstyle.google.suppressionfilter.config}"
+                  default="checkstyle-suppressions.xml" />
+        <property name="optional" value="true"/>
+    </module>
+
+    <!-- https://checkstyle.org/filters/suppresswithnearbytextfilter.html -->
+    <!-- 코드 내에 특정한 근접 텍스트(보통 주석) 패턴을 찾도록 하는 설정 -->
+    <module name="SuppressWithNearbyTextFilter">
+        <property name="nearbyTextPattern"
+                  value="CHECKSTYLE.SUPPRESS\: (\w+) for ([+-]\d+) lines"/>
+        <property name="checkPattern" value="$1"/>
+        <property name="lineRange" value="$2"/>
+    </module>
+
+    <!-- 검사할 항목 모음 -->
+    <module name="TreeWalker">
+        <!-- block conventions -->
+
+        <!-- https://checkstyle.org/checks/blocks/needbraces.html#NeedBraces -->
+        <!-- 한 줄짜리 if 구문에도 중괄호 사용 검색 -->
+        <module name="NeedBraces"/>
+
+
+        <!-- coding conventions -->
+
+        <!-- https://checkstyle.org/checks/coding/declarationorder.html#DeclarationOrder -->
+        <!-- 클래스 내 필드 및 메서드 작성 순서 검사 -->
+        <module name="DeclarationOrder"/>
+
+        <!-- https://checkstyle.org/checks/coding/fallthrough.html#FallThrough -->
+        <!-- switch-case 문에서 바로 아래 case를 수행하는 경우 // fallthrough 주석 검사 -->
+        <module name="FallThrough"/>
+
+        <!-- https://checkstyle.org/checks/coding/missingswitchdefault.html#MissingSwitchDefault -->
+        <!-- switch 문에 default문이 포함되는지 검사 -->
+        <module name="MissingSwitchDefault"/>
+
+
+        <!-- miscellaneous conventions -->
+
+        <!-- https://checkstyle.org/checks/misc/indentation.html#Indentation -->
+        <!-- Intellij 들여쓰기 기본 설정과 동일한지 검사 -->
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="tabWidth" value="4"/>
+            <property name="lineWrappingIndentation" value="8"/>
+        </module>
+
+
+        <!-- naming conventions -->
+
+        <!-- https://checkstyle.org/checks/naming/constantname.html#ConstantName -->
+        <!-- 상수 이름은 모두 대문자로 설정 -->
+        <module name="ConstantName">
+            <property name="format" value="^[A-Z][A-Z0-9_]*$"/>
+        </module>
+
+        <!-- https://checkstyle.org/checks/naming/localvariablename.html#LocalVariableName -->
+        <!-- 지역변수에 camelCase 적용 -->
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- https://checkstyle.org/checks/naming/membername.html#MemberName -->
+        <!-- 클래스 필드명에 camelCase 적용 -->
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- https://checkstyle.org/checks/naming/methodname.html#MethodName -->
+        <!-- 메서드 이름에 camelCase 적용 -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- https://checkstyle.org/checks/naming/packagename.html#PackageName -->
+        <!-- 패키지명은 소문자 및 숫자로만 작성할 것 -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+
+        <!-- https://checkstyle.org/checks/naming/typename.html#TypeName -->
+        <!-- 클래스 이름에 PascalCase 적용 -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+
+
+        <!-- whitespace conventions -->
+
+        <!-- https://checkstyle.org/checks/whitespace/whitespaceafter.html#WhitespaceAfter -->
+        <!-- https://checkstyle.org/checks/whitespace/whitespacearound.html#WhitespaceAround -->
+        <!-- 연산자 등의 앞뒤에 공백 적용 -->
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+    </module>
+</module>
