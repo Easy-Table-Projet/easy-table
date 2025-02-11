@@ -4,8 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.reservation.dto.response.ReservationCreateRes;
-import org.example.easytable.reservation.dto.response.ReservationGetRes;
+import org.example.easytable.member.entity.Member;
+import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
+import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +25,12 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping("{restaurantId}/reservation")
-    public ResponseEntity<ReservationCreateRes> save(
+    public ResponseEntity<ReservationCreateResDto> save(
             @PathVariable("restaurantId") Long restaurantId,
             LocalDateTime ReservationTime,
             HttpServletRequest request
     ) {
+
         // TODO :: httpServletRequest 에서 token 안의 member_id 값 추출하기
         reservationService.save(restaurantId, ReservationTime);
 
@@ -36,11 +38,11 @@ public class ReservationController {
     }
 
     @GetMapping("/{restaurantId}/reservation")
-    public ResponseEntity<List<ReservationGetRes>> getReservation(
+    public ResponseEntity<List<ReservationGetResDto>> getReservation(
             @PathVariable("restaurantId") Long restaurantId
     ) {
         //TODO : 사용자가 가진 예약 조회, 특정 사용자의 예약 조회(?)
-        List<ReservationGetRes> reservation = reservationService.getReservation();
+        List<ReservationGetResDto> reservation = reservationService.getReservation();
 
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }

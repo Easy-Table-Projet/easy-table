@@ -7,12 +7,13 @@ import org.example.easytable.reservation.entity.ReservationStatus;
 
 @RequiredArgsConstructor
 @Getter
-public class ReservationCreateRes {
+public class ReservationGetResDto {
 
-    private final Long reservation_id;
     private final Long member_id;
     private final Long restaurant_id;
     private final LocalDateTime reservation_time;
     private final ReservationStatus status;
 
+
 }
+
