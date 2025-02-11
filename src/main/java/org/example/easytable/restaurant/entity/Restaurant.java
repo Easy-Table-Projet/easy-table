@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.easytable.common.entity.BaseEntity;
 import org.example.easytable.reservation.entity.Reservation;
-import org.example.easytable.restaurant.dto.request.CreateRestaurantDto;
+import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class Restaurant extends BaseEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
-    public static Restaurant newRestaurant(CreateRestaurantDto req) {
+    public static Restaurant newRestaurant(RestaurantCreateDto req) {
         return Restaurant.builder()
                 .name(req.name())
                 .address(req.address())

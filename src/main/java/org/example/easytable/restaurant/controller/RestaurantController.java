@@ -1,7 +1,7 @@
 package org.example.easytable.restaurant.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.restaurant.dto.request.CreateRestaurantDto;
+import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.service.RestaurantService;
@@ -19,7 +19,7 @@ public class RestaurantController {
 
     @PostMapping//todo: 관리자 권한 설정 필요
     public ResponseEntity<RestaurantResDto> createRestaurant(
-            @RequestBody CreateRestaurantDto dto) {
+            @RequestBody RestaurantCreateDto dto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(restaurantService.createRestaurant(dto));

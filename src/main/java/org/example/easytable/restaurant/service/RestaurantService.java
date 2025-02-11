@@ -1,7 +1,7 @@
 package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.restaurant.dto.request.CreateRestaurantDto;
+import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
@@ -18,7 +18,7 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
 
     @Transactional
-    public RestaurantResDto createRestaurant(CreateRestaurantDto dto) {
+    public RestaurantResDto createRestaurant(RestaurantCreateDto dto) {
         Restaurant restaurant = Restaurant.newRestaurant(dto);
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
         return RestaurantResDto.from(savedRestaurant);
