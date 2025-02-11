@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.member.entity.Member;
 import org.example.easytable.reservation.dto.response.ReservationCreateRes;
 import org.example.easytable.reservation.dto.response.ReservationGetRes;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
+import org.example.easytable.restaurant.entity.Restaurant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,8 +26,8 @@ public class ReservationService {
         //TODO : RestaurantId로 식당 조회 및 예외처리
 
         Reservation createdReservation = Reservation.builder()
-                .member(null)
-                .restaurant(null)
+                .member(new Member())
+                .restaurant(new Restaurant())
                 .reservationTime(reservationTime)
                 .status(ReservationStatus.CONFIRMED)
                 .isDeleted(false)
