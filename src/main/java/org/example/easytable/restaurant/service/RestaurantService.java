@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
 
@@ -38,14 +37,14 @@ public class RestaurantService {
         //todo: 빈 리스트 일 경우 404 예외처리 필요.
         return restaurants.map(RestaurantResDto::from);
     }
-
+    @Transactional
     public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto dto) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
         //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
         restaurant.updateRestaurantName(dto.restaurantName());
         return RestaurantResDto.from(restaurant);
     }
-
+    @Transactional
     public void deleteRestaurantName(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
         //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
