@@ -2,6 +2,7 @@ package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.restaurant.dto.request.CreateRestaurantDto;
+import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
@@ -35,5 +36,13 @@ public class RestaurantService {
         Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitle(restaurantName,pageable);
         //todo: 빈 리스트 일 경우 404 예외처리 필요.
         return restaurants.map(RestaurantResDto::from);
+    }
+
+    @Transactional
+    public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto dto) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
+        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+        restaurant.updateRestaurantName(dto.restaurantName());
+        return  RestaurantResDto.from(restaurant);
     }
 }

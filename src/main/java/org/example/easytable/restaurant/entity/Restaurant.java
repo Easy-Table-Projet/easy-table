@@ -32,11 +32,16 @@ public class Restaurant extends BaseEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
-    public static Restaurant newRestaurant(CreateRestaurantDto req){
+    public static Restaurant newRestaurant(CreateRestaurantDto req) {
         return Restaurant.builder()
                 .name(req.name())
                 .address(req.address())
                 .isDeleted(false)
                 .build();
+    }
+
+    public Restaurant updateRestaurantName(String name) {
+        this.name = name;
+        return this;
     }
 }
