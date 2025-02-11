@@ -40,8 +40,11 @@ public class Restaurant extends BaseEntity {
                 .build();
     }
 
-    public Restaurant updateRestaurantName(String name) {
+    public void updateRestaurantName(String name) {
         this.name = name;
-        return this;
+    }
+
+    public void deleteRestaurant() {
+        this.isDeleted = true;
     }
 }

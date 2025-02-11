@@ -33,7 +33,7 @@ public class RestaurantService {
     public Page<RestaurantResDto> findAllRestaurantByTitle(
             String restaurantName,
             Pageable pageable) { //todo: 주소 등 추가 검색 조건 파라미터 추가
-        Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitle(restaurantName,pageable);
+        Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitle(restaurantName, pageable);
         //todo: 빈 리스트 일 경우 404 예외처리 필요.
         return restaurants.map(RestaurantResDto::from);
     }
@@ -43,6 +43,13 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
         //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
         restaurant.updateRestaurantName(dto.restaurantName());
-        return  RestaurantResDto.from(restaurant);
+        return RestaurantResDto.from(restaurant);
+    }
+
+    @Transactional
+    public void deleteRestaurantName(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
+        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+        restaurant.deleteRestaurant();
     }
 }

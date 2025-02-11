@@ -38,12 +38,18 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.findAllRestaurantByTitle(restaurantName, pageable));
     }
 
-    @PatchMapping("/{restaurantId}")
+    @PatchMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
     public ResponseEntity<RestaurantResDto> updateRestaurantName(
             @PathVariable Long restaurantId,
             @RequestBody RestaurantNameUpdateReqDto dto) {
-        return ResponseEntity.ok(restaurantService.updateRestaurantName(restaurantId,dto));
+        return ResponseEntity.ok(restaurantService.updateRestaurantName(restaurantId, dto));
     }
 
+    @DeleteMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
+    public ResponseEntity<Void> deleteRestaurantName(
+            @PathVariable Long restaurantId) {
+        restaurantService.deleteRestaurantName(restaurantId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 }
