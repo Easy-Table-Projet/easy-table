@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -52,7 +51,7 @@ public class ReservationService {
                         reservation.getStatus()))
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     public void deleteReservation(Long restaurantId, Long reservationId) {
         Reservation foundReservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 예약입니다"));
