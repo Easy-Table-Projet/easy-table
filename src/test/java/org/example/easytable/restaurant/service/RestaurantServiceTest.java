@@ -122,4 +122,27 @@ public class RestaurantServiceTest {
         verify(restaurantRepository, times(1)).findById(1L);
     }
 
+    @Test
+    void deleteRestaurantName_성공() {
+        // given
+        when(restaurantRepository.findById(1L)).thenReturn(Optional.of(restaurant));
+
+        // when
+        restaurantService.deleteRestaurantName(1L);
+
+        // then
+        assertThat(restaurant.isDeleted()).isTrue();
+        verify(restaurantRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void deleteRestaurantName_예외처리_테스트() {
+        // given
+        when(restaurantRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThrows(RuntimeException.class, () -> restaurantService.deleteRestaurantName(1L));
+        verify(restaurantRepository, times(1)).findById(1L);
+    }
+
 }
