@@ -1,6 +1,7 @@
 package org.example.easytable.restaurant.service;
 
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
+import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
@@ -96,6 +97,29 @@ public class RestaurantServiceTest {
         verify(restaurantRepository, times(1)).findAllRestaurantByTitle("가게이름", pageable);
     }
 
+    @Test
+    void 가게_정보_수정_성공() {
+        // given
+        RestaurantNameUpdateReqDto dto = new RestaurantNameUpdateReqDto("수정수정");
+        when(restaurantRepository.findById(1L)).thenReturn(Optional.of(restaurant));
 
+        // when
+        RestaurantResDto result = restaurantService.updateRestaurantName(1L, dto);
+
+        // then
+        assertThat(result.name()).isEqualTo("수정수정");
+        verify(restaurantRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void 가게_정보_수정_예외처리_테스트() {
+        // given
+        when(restaurantRepository.findById(1L)).thenReturn(Optional.empty());
+        RestaurantNameUpdateReqDto dto = new RestaurantNameUpdateReqDto("수정수정");
+
+        // when & then
+        assertThrows(RuntimeException.class, () -> restaurantService.updateRestaurantName(1L, dto));
+        verify(restaurantRepository, times(1)).findById(1L);
+    }
 
 }
