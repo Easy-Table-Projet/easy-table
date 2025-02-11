@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class MemberSignInResDto {
-	private String token;
+	private final String token;
 
 	public MemberSignInResDto(String token) {
 		this.token = token;

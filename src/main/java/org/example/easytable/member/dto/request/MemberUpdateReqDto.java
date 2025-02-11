@@ -1,11 +1,12 @@
 package org.example.easytable.member.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.example.easytable.member.entity.Member.UserType;
 
+@AllArgsConstructor
 @Getter
 public class MemberUpdateReqDto {
-	private String name;
+	private final String email;
+	private final String membername;
 	private String address;
-	private UserType userType;
 }

@@ -1,68 +1,69 @@
 package org.example.easytable.member.controller;
 
-import org.example.easytable.common.utills.JwtUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.example.easytable.common.filter.JwtFilter;
+import org.example.easytable.member.dto.request.MemberResignReqDto;
 import org.example.easytable.member.dto.request.MemberSignInReqDto;
 import org.example.easytable.member.dto.request.MemberSignUpReqDto;
 import org.example.easytable.member.dto.response.MemberResignResDto;
 import org.example.easytable.member.dto.response.MemberSignInResDto;
 import org.example.easytable.member.dto.response.MemberSignUpResDto;
 import org.example.easytable.member.service.MemberAuthService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor
+@Slf4j
 @RestController
-@RequestMapping("/api/members") // URI를 명세와 일치하도록 수정
+@RequestMapping("/api/members")
+@RequiredArgsConstructor
+
 public class MemberAuthController {
-
 	private final MemberAuthService memberAuthService;
-	private final JwtUtil jwtUtil;
 
-	// 멤버 회원가입
+	// 유저 회원가입
 	@PostMapping("/sign-up")
-	public ResponseEntity<?> signUpMember(@RequestBody MemberSignUpReqDto requestDto) {
-		try {
-			MemberSignUpResDto responseDto = memberAuthService.signUp(requestDto);
-			return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+	public ResponseEntity<MemberSignUpResDto> signUpUser(
+		@RequestBody MemberSignUpReqDto requestDto
+	) {
+		MemberSignUpResDto responseDto = memberAuthService.signUp(requestDto);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
 	}
 
-	// 멤버 로그인
+	// 유저 로그인
 	@PostMapping("/sign-in")
-	public ResponseEntity<?> signInMember(@RequestBody MemberSignInReqDto requestDto) {
-		try {
-			MemberSignInResDto responseDto = memberAuthService.signIn(requestDto);
-			return ResponseEntity.ok(responseDto);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-		}
+	public ResponseEntity<MemberSignInResDto> SignInUser(
+		@RequestBody MemberSignInReqDto requestDto
+	) {
+		MemberSignInResDto responseDto = memberAuthService.signIn(requestDto);
+
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
-	// 멤버 탈퇴
-	@DeleteMapping("/resign")
-	public ResponseEntity<?> resignMember(HttpServletRequest request, @RequestParam String password) {
-		try {
-			// JWT 토큰 추출
-			String token = jwtUtil.extractToken(request);
-			if (token == null || !jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
-			}
+	// 유저 탈퇴
+	@DeleteMapping("/{memberId}")
+	public ResponseEntity<MemberResignResDto> ResignUser(
+		@RequestBody MemberResignReqDto requestDto,
+		HttpServletRequest request
+	) {
+		// 1. Authorization 헤더에서 JWT 토큰 추출
+		String token = JwtFilter.extractToken(request);
 
-			// 토큰에서 멤버 ID 추출
-			Long memberId = jwtUtil.getMemberIdFromToken(token);
+		// 2. 유저 탈퇴 서비스 호출
+		memberAuthService.resign(token, requestDto.getPassword());
 
-			// `Long` → `String` 변환 후 전달
-			memberAuthService.resign(String.valueOf(memberId), password);
+		// 탈퇴 완료 메시지와 함께 200 OK 응답 반환
+		MemberResignResDto responseDto = new MemberResignResDto();
 
-			return ResponseEntity.ok(new MemberResignResDto());
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 }

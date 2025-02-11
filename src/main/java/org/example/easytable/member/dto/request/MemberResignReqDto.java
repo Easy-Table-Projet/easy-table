@@ -11,9 +11,9 @@ public class MemberResignReqDto {
 
 	private final String password;
 
-	public MemberResignReqDto(String email, String name, String password) {
+	public MemberResignReqDto(String email, String membername, String password) {
 		this.email = email;
-		this.name = name;
+		this.name = membername;
 		this.password = password;
 	}
 }

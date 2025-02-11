@@ -1,57 +1,86 @@
 package org.example.easytable.member.entity;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.example.easytable.common.entity.BaseEntity;
-import org.example.easytable.reservation.entity.Reservation;
+import org.example.easytable.member.dto.request.MemberUpdateReqDto;
+import org.hibernate.annotations.Comment;
 
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
 
 @Entity
+@Table(name = "MEMBER")
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Member extends BaseEntity {
 
+	@Comment("멤버 식별자")
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(columnDefinition = "BIGINT")
 	private Long id;
 
-	@Column(nullable = false, unique = true)
+	@Comment("이름")
+	@Column(
+		name = "member_name",
+		nullable = false
+	)
+	private String memberName;
+
+	@Comment("이메일")
+	@Column(
+		name = "email",
+		nullable = false
+	)
 	private String email;
 
-	@Column(nullable = false)
-	private String name;
-
-	@Column(nullable = false)
+	@Comment("비밀번호")
+	@Column(
+		name = "password",
+		nullable = false
+	)
 	private String password;
 
+	@Comment("주소")
+	@Column(
+		name = "address",
+		nullable = false
+	)
 	private String address;
 
-	@Enumerated(EnumType.STRING)
-	private UserType userType;
+	@Comment("유저 유형")
+	@Column(
+		name = "user_type",
+		nullable = false
+	)
+	private String userType; // OWNER/USER
 
-	private boolean isDeleted;
+	@Comment("유저 활성화")
+	@Column(
+		name = "active",
+		nullable = false
+	)
+	private boolean active; // 선언만
 
-	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Reservation> reservations;
+	protected Member() {}
 
-	public void memberUpdate(String name, String address, UserType userType) {
-		this.name = name;
-		this.address = address;
-		this.userType = userType;
+	// 이메일, 이름, 비밀번호를 받는 생성자 추가
+	public Member(String email, String memberName, String password) {
+		this.email = email;
+		this.memberName = memberName;
+		this.password = password;
+		this.active = true; // 기본값으로 활성화 상태를 true로 설정
 	}
 
-	// 탈퇴 처리 메소드
 	public void inActivate() {
-		this.isDeleted = true;  // 탈퇴 상태로 변경
+		this.active = false;
 	}
 
-	public enum UserType {
-		OWNER, USER
+	public void updateMember(MemberUpdateReqDto updateUserRequestDto) {
+		this.memberName = updateUserRequestDto.getMembername();
+		this.address = updateUserRequestDto.getAddress();
 	}
 }

@@ -1,10 +1,11 @@
 package org.example.easytable.common.config;
 
-import org.example.easytable.common.filter.JwtFilter;
-import org.example.easytable.common.utills.JwtUtil;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.example.easytable.common.filter.JwtFilter;
+import org.example.easytable.common.utils.JwtUtil;
 
 @Configuration
 public class FilterConfig {
@@ -22,13 +23,8 @@ public class FilterConfig {
 		// JwtFilter 인스턴스 생성 후 주입
 		registrationBean.setFilter(new JwtFilter(jwtUtil));  // JwtUtil을 필터에 주입
 
-
 		registrationBean.addUrlPatterns("/api/*");  // "api/"로 시작하는 모든 URL에 대해 필터를 적용
 		registrationBean.setOrder(1);  // 필터 우선순위 설정
-
-		// 회원가입 경로는 필터에서 제외
-		registrationBean.addUrlPatterns("/api/members/sign-up"); // 회원가입 경로는 필터 적용 제외
-
 
 		return registrationBean;
 	}

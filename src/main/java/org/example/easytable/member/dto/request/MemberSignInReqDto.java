@@ -9,9 +9,9 @@ public class MemberSignInReqDto {
 	private final String name;
 	private final String password;
 
-	public MemberSignInReqDto(String email, String name, String password) {
+	public MemberSignInReqDto(String email, String membername, String password) {
 		this.email = email;
-		this.name = name;
+		this.name = membername;
 		this.password = password;
 	}
 }
