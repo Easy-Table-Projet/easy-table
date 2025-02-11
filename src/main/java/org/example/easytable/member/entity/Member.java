@@ -16,30 +16,42 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Member extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false)
-    private String name;
+	@Column(nullable = false, unique = true)
+	private String email;
 
-    @Column(nullable = false)
-    private String password;
+	@Column(nullable = false)
+	private String name;
 
-    private String address;
+	@Column(nullable = false)
+	private String password;
 
-    @Enumerated(EnumType.STRING)
-    private UserType userType;
+	private String address;
 
-    private boolean isDeleted;
+	@Enumerated(EnumType.STRING)
+	private UserType userType;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reservation> reservations;
-}
+	private boolean isDeleted;
 
-enum UserType {
-    OWNER, USER
+	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Reservation> reservations;
+
+	public void memberUpdate(String name, String address, UserType userType) {
+		this.name = name;
+		this.address = address;
+		this.userType = userType;
+	}
+
+	// 탈퇴 처리 메소드
+	public void inActivate() {
+		this.isDeleted = true;  // 탈퇴 상태로 변경
+	}
+
+	public enum UserType {
+		OWNER, USER
+	}
 }
