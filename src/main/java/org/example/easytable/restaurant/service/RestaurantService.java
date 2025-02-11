@@ -19,4 +19,10 @@ public class RestaurantService {
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
         return RestaurantResDto.from(savedRestaurant);
     }
+
+    public RestaurantResDto findRestaurantById(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
+        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+        return RestaurantResDto.from(restaurant);
+    }
 }

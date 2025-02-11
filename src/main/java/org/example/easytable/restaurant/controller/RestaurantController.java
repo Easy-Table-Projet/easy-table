@@ -6,10 +6,7 @@ import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.service.RestaurantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/restaurant")
@@ -24,5 +21,12 @@ public class RestaurantController {
                 .status(HttpStatus.CREATED)
                 .body(restaurantService.createRestaurant(dto));
     }
+
+    @GetMapping("/{restaurantId}")
+    public ResponseEntity<RestaurantResDto> findRestaurantById (
+            @PathVariable Long restaurantId){
+        return ResponseEntity.ok(restaurantService.findRestaurantById(restaurantId));
+    }
+
 
 }
