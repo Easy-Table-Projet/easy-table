@@ -35,8 +35,14 @@ public class Reservation extends BaseEntity {
     private ReservationStatus status;
 
     private boolean isDeleted;
+
+    public Reservation(Member member, Restaurant restaurant, LocalDateTime reservationTime, ReservationStatus status, boolean isDeleted) {
+        this.member = member;
+        this.restaurant = restaurant;
+        this.reservationTime = reservationTime;
+        this.status = status;
+        this.isDeleted = isDeleted;
+    }
 }
 
-enum ReservationStatus {
-    PENDING, CONFIRMED, CANCELED
-}
+
