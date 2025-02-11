@@ -1,8 +1,11 @@
 package org.example.easytable.reservation.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.response.ReservationCreateRes;
+import org.example.easytable.reservation.dto.response.ReservationGetRes;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
@@ -38,4 +41,15 @@ public class ReservationService {
     }
 
 
+    public List<ReservationGetRes> getReservation() {
+
+        List<Reservation> reservationList = reservationRepository.findAll();
+
+        return reservationList.stream().map(reservation -> new ReservationGetRes(
+                reservation.getMember().getId(),
+                reservation.getRestaurant().getId(),
+                reservation.getReservationTime(),
+                reservation.getStatus()))
+                .collect(Collectors.toList());
+    }
 }
