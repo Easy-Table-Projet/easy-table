@@ -13,23 +13,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
 
-    @Transactional
     public RestaurantResDto createRestaurant(RestaurantCreateDto dto) {
         Restaurant restaurant = Restaurant.newRestaurant(dto);
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
         return RestaurantResDto.from(savedRestaurant);
     }
 
+    @Transactional(readOnly = true)
     public RestaurantResDto findRestaurantById(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
         //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
         return RestaurantResDto.from(restaurant);
     }
 
+    @Transactional(readOnly = true)
     public Page<RestaurantResDto> findAllRestaurantByTitle(
             String restaurantName,
             Pageable pageable) { //todo: 주소 등 추가 검색 조건 파라미터 추가
@@ -38,7 +39,6 @@ public class RestaurantService {
         return restaurants.map(RestaurantResDto::from);
     }
 
-    @Transactional
     public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto dto) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
         //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
@@ -46,7 +46,6 @@ public class RestaurantService {
         return RestaurantResDto.from(restaurant);
     }
 
-    @Transactional
     public void deleteRestaurantName(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
         //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
