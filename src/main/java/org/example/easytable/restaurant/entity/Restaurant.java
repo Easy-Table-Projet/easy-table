@@ -1,14 +1,19 @@
 package org.example.easytable.restaurant.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.easytable.common.entity.BaseEntity;
 import org.example.easytable.reservation.entity.Reservation;
-
-import java.util.List;
 
 @Entity
 @Getter
