@@ -10,8 +10,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,5 +78,24 @@ public class RestaurantServiceTest {
         assertThrows(RuntimeException.class, () -> restaurantService.findRestaurantById(1L));
         verify(restaurantRepository, times(1)).findById(1L);
     }
+
+    @Test
+    void 가게_다건_조회_성공() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Restaurant> restaurantPage = new PageImpl<>(List.of(restaurant), pageable, 1);
+
+        when(restaurantRepository.findAllRestaurantByTitle("가게이름", pageable))
+                .thenReturn(restaurantPage);
+
+        // when
+        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitle("가게이름", pageable);
+
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        verify(restaurantRepository, times(1)).findAllRestaurantByTitle("가게이름", pageable);
+    }
+
+
 
 }
