@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.easytable.restaurant.dto.request.CreateRestaurantDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.service.RestaurantService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +18,23 @@ public class RestaurantController {
 
     @PostMapping//todo: 관리자 권한 설정 필요
     public ResponseEntity<RestaurantResDto> createRestaurant(
-            @RequestBody CreateRestaurantDto dto){
+            @RequestBody CreateRestaurantDto dto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(restaurantService.createRestaurant(dto));
     }
 
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<RestaurantResDto> findRestaurantById (
-            @PathVariable Long restaurantId){
+    public ResponseEntity<RestaurantResDto> findRestaurantById(
+            @PathVariable Long restaurantId) {
         return ResponseEntity.ok(restaurantService.findRestaurantById(restaurantId));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<RestaurantResDto>> findAllRestaurantByTitle(
+            @RequestParam(required = false) String restaurantName,
+            Pageable pageable) {
+        return ResponseEntity.ok(restaurantService.findAllRestaurantByTitle(restaurantName, pageable));
     }
 
 
