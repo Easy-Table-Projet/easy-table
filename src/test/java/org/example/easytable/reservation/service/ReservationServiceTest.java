@@ -2,7 +2,6 @@ package org.example.easytable.reservation.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,8 +10,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.example.easytable.common.entity.UserType;
 import org.example.easytable.member.entity.Member;
+import org.example.easytable.member.entity.Member.MemberBuilder;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -71,12 +70,25 @@ class ReservationServiceTest {
     public void 식당에_등록된_예약_조회() throws Exception {
 
         // given
-        Member member = new Member(1L, "test@naver.com", "test", "password", "address",
-                UserType.USER, false, null);
+        Member member = Member.builder()
+                .id(1L)
+                .email("teste@naver.com")
+                .name("name")
+                .password("password")
+                .address("address")
+                .isDeleted(false)
+                .reservations(null)
+                .build();
+
         Long restaurantId = 1L;
         LocalDateTime reservationTime = LocalDateTime.now();
-        Restaurant restaurant
-                = new Restaurant(restaurantId, "restaurant", "address", false, null);
+
+        Restaurant restaurant = Restaurant.builder()
+                .id(restaurantId)
+                .name("name")
+                .address("주소")
+                .isDeleted(false)
+                .reservations(null).build();
 
         Reservation reservation = Reservation.builder()
                 .member(member)
@@ -103,7 +115,12 @@ class ReservationServiceTest {
         Long restaurantId = 1L;
         Long reservationId = 1L; // 테스트용 예약 ID
 
-        Restaurant restaurant = new Restaurant(restaurantId, "식당 이름", "주소", false, null);
+        Restaurant restaurant = Restaurant.builder()
+                .id(restaurantId)
+                .name("name")
+                .address("주소")
+                .isDeleted(false)
+                .reservations(null).build();
 
         Reservation reservation = Reservation.builder()
                 .id(reservationId)
