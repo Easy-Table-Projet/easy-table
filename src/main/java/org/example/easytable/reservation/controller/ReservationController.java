@@ -32,7 +32,7 @@ public class ReservationController {
     ) {
 
         // TODO :: httpServletRequest 에서 token 안의 member_id 값 추출하기
-        reservationService.save(restaurantId, requestDto.getReservationTime());
+        reservationService.save(restaurantId, requestDto.getReservationTime(), requestDto.getGuestCount());
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

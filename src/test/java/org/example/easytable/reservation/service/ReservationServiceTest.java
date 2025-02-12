@@ -42,8 +42,10 @@ class ReservationServiceTest {
         // given
         Long restaurantId = 1L;
         LocalDateTime reservationTime = LocalDateTime.now();
+        int orderCount = 1;
+        int validSeatCount = 20;
         Restaurant restaurant
-                = new Restaurant(restaurantId, "restaurant", "address", false, null);
+                = new Restaurant(restaurantId, "restaurant", "address", validSeatCount, false, null);
 
         Reservation reservation = Reservation.builder()
                 .member(null)
@@ -58,7 +60,7 @@ class ReservationServiceTest {
 
         // when
         ReservationCreateResDto savedReservation = reservationService.save(restaurantId,
-                reservationTime);
+                reservationTime, orderCount);
 
         // then
         verify(restaurantRepository, times(1)).findById(restaurantId);
