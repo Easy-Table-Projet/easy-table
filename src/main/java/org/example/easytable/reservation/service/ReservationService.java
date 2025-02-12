@@ -91,30 +91,21 @@ public class ReservationService {
         // TODO: lock 점유 시간도 설정 파일로 옮길 것
         readLock.lock(2000, TimeUnit.MILLISECONDS);
 
-        try {
-            // 트랜잭션 동기화에 등록: 트랜잭션 종료(커밋 또는 롤백) 시점에 락 해제
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCompletion(int status) {
-                    // 트랜잭션 종료 후 락 해제
-                    if (readLock.isHeldByCurrentThread()) {
-                        readLock.unlock();
-                    }
+
+        // 트랜잭션 동기화에 등록: 트랜잭션 종료(커밋 또는 롤백) 시점에 락 해제
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                // 트랜잭션 종료 후 락 해제
+                if (readLock.isHeldByCurrentThread()) {
+                    readLock.unlock();
                 }
-            });
-
-            // 비즈니스 로직 수행
-            return restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
-
-        } catch (Exception e) {
-            // 만약 락 등록 전에 예외가 발생하는 경우, 안전하게 락 해제
-            if (readLock.isHeldByCurrentThread()) {
-                readLock.unlock();
             }
-            redissonClient.shutdown();
-            throw e;
-        }
+        });
+
+        // 비즈니스 로직 수행
+        return restaurantRepository.findById(restaurantId)
+            .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -128,31 +119,21 @@ public class ReservationService {
         RLock writeLock = rwLock.writeLock();
         writeLock.lock(2000, TimeUnit.MILLISECONDS);
 
-        try {
-            // 트랜잭션 동기화에 등록: 트랜잭션 종료(커밋 또는 롤백) 시점에 락 해제
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCompletion(int status) {
-                    // 트랜잭션 종료 후 락 해제
-                    if (writeLock.isHeldByCurrentThread()) {
-                        writeLock.unlock();
-                    }
+        // 트랜잭션 종료(커밋 또는 롤백) 시점에 락 해제
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                // 트랜잭션 종료 후 락 해제
+                if (writeLock.isHeldByCurrentThread()) {
+                    writeLock.unlock();
                 }
-            });
-
-            // 비즈니스 로직 수행
-            reservationRepository.save(reservation);
-            restaurant.changeValidSeatCount(-guestCount);
-            restaurantRepository.save(restaurant);
-
-        } catch (Exception e) {
-            // 만약 락 등록 전에 예외가 발생하는 경우, 안전하게 락 해제
-            if (writeLock.isHeldByCurrentThread()) {
-                writeLock.unlock();
             }
-            redissonClient.shutdown();
-            throw e;
-        }
+        });
+
+        // 비즈니스 로직 수행
+        reservationRepository.save(reservation);
+        restaurant.changeValidSeatCount(-guestCount);
+        restaurantRepository.save(restaurant);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -179,6 +160,7 @@ public class ReservationService {
 
         // 비즈니스 로직 수행
         reservationRepository.delete(reservation);
-            // TODO: reservation에서 예약 인원 가져와 restaurant의 ValidSeatCount에 반영하도록 구현할 것
+        // TODO: reservation에 예약자 수 추가할 것
+        // TODO: reservation에서 예약 인원 가져와 restaurant의 ValidSeatCount에 반영하도록 구현할 것
     }
 }

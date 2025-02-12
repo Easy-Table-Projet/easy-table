@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
@@ -147,6 +148,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @Transactional
     public void checkReservationSaveConcurrency() throws InterruptedException {
         // given
         Long restaurantId = 1L;
@@ -191,6 +193,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @Transactional
     public void checkReservationDeleteConcurrency() throws InterruptedException {
         // given
         Long restaurantId = 1L;
