@@ -47,9 +47,9 @@ public class ReservationService {
     }
 
 
-    public List<ReservationGetResDto> getReservation() {
+    public List<ReservationGetResDto> getReservationByRestaurant(Long restaurantId) {
 
-        List<Reservation> reservationList = reservationRepository.findAll();
+        List<Reservation> reservationList = reservationRepository.findByRestaurantId(restaurantId);
 
         return reservationList.stream().map(reservation -> new ReservationGetResDto(
                         reservation.getMember().getId(),
@@ -80,8 +80,5 @@ public class ReservationService {
         }
         reservationRepository.delete(foundReservation);
     }
-
-
-
 
 }
