@@ -47,6 +47,16 @@ public class ReservationController {
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }
 
+    @GetMapping("/{memberId}/reservation")
+    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember(
+            @PathVariable("memberId") Long memberId
+    ) {
+        List<ReservationGetResDto> reservation = reservationService.getReservationByMember(
+                memberId);
+
+        return new ResponseEntity<>(reservation, HttpStatus.OK);
+    }
+
     @DeleteMapping("/{restaurantId}/reservation/{reservationId}")
     public void deleteReservation(
             @PathVariable("restaurantId") Long restaurantId,

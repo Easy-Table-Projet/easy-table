@@ -59,6 +59,17 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
+    public List<ReservationGetResDto> getReservationByMember(Long memberId) {
+
+        List<Reservation> reservationList = reservationRepository.findByMemberId(memberId);
+
+        return reservationList.stream().map(reservation -> new ReservationGetResDto(
+                reservation.getMember().getId(),
+                reservation.getRestaurant().getId(),
+                reservation.getReservationTime(),
+                reservation.getStatus())).collect(Collectors.toList());
+    }
+
     @Transactional
     public void deleteReservation(Long restaurantId, Long reservationId) {
         Reservation foundReservation = reservationRepository.findById(reservationId)
@@ -69,4 +80,8 @@ public class ReservationService {
         }
         reservationRepository.delete(foundReservation);
     }
+
+
+
+
 }
