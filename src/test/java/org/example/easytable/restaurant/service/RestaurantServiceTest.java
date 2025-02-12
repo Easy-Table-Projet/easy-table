@@ -4,6 +4,7 @@ import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
+import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,12 +37,12 @@ public class RestaurantServiceTest {
     private RestaurantCreateDto restaurantCreateDto;
     private Restaurant restaurant;
 
-//    @BeforeEach
-//    void setUp() {
-//        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소");
-//        restaurant = Restaurant.newRestaurant(restaurantCreateDto);
-//        ReflectionTestUtils.setField(restaurant, "id", 1L);
-//    }
+    @BeforeEach
+    void setUp() {
+        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소","가게분류");
+        restaurant = Restaurant.newRestaurant(restaurantCreateDto);
+        ReflectionTestUtils.setField(restaurant, "id", 1L);
+    }
 
     @Test
     void 가게_저장_성공_테스트() {
@@ -80,22 +81,22 @@ public class RestaurantServiceTest {
         verify(restaurantRepository, times(1)).findById(1L);
     }
 
-//    @Test
-//    void 가게_다건_조회_성공() {
-//        // given
-//        Pageable pageable = PageRequest.of(0, 10);
-//        Page<Restaurant> restaurantPage = new PageImpl<>(List.of(restaurant), pageable, 1);
-//
-//        when(restaurantRepository.findAllRestaurantByTitle("가게이름", pageable))
-//                .thenReturn(restaurantPage);
-//
-//        // when
-//        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitle("가게이름", pageable);
-//
-//        // then
-//        assertThat(result.getTotalElements()).isEqualTo(1);
-//        verify(restaurantRepository, times(1)).findAllRestaurantByTitle("가게이름", pageable);
-//    }
+    @Test
+    void 가게_다건_조회_성공() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Restaurant> restaurantPage = new PageImpl<>(List.of(restaurant), pageable, 1);
+
+        when(restaurantRepository.findAllRestaurantByTitleAndCategory("가게이름", any(RestaurantCategory.class), pageable))
+                .thenReturn(restaurantPage);
+
+        // when
+        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitleAndCategory("가게이름", "가게분류", pageable);
+
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        verify(restaurantRepository, times(1)).findAllRestaurantByTitleAndCategory("가게이름", any(RestaurantCategory.class), pageable);
+    }
 
     @Test
     void 가게_정보_수정_성공() {
