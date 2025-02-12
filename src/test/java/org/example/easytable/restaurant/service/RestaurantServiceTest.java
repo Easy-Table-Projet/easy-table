@@ -39,7 +39,7 @@ public class RestaurantServiceTest {
 
     @BeforeEach
     void setUp() {
-        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소","가게분류");
+        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소","KOREAN");
         restaurant = Restaurant.newRestaurant(restaurantCreateDto);
         ReflectionTestUtils.setField(restaurant, "id", 1L);
     }
@@ -87,15 +87,17 @@ public class RestaurantServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Restaurant> restaurantPage = new PageImpl<>(List.of(restaurant), pageable, 1);
 
-        when(restaurantRepository.findAllRestaurantByTitleAndCategory("가게이름", any(RestaurantCategory.class), pageable))
+        RestaurantCategory category = RestaurantCategory.valueOf("KOREAN");
+
+        when(restaurantRepository.findAllRestaurantByTitleAndCategory("가게이름", category, pageable))
                 .thenReturn(restaurantPage);
 
         // when
-        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitleAndCategory("가게이름", "가게분류", pageable);
+        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitleAndCategory("가게이름", "KOREAN", pageable);
 
         // then
         assertThat(result.getTotalElements()).isEqualTo(1);
-        verify(restaurantRepository, times(1)).findAllRestaurantByTitleAndCategory("가게이름", any(RestaurantCategory.class), pageable);
+        verify(restaurantRepository, times(1)).findAllRestaurantByTitleAndCategory("가게이름", category, pageable);
     }
 
     @Test
