@@ -37,6 +37,4 @@ public class Reservation extends BaseEntity {
     private boolean isDeleted;
 }
 
-enum ReservationStatus {
-    PENDING, CONFIRMED, CANCELED
-}
+
