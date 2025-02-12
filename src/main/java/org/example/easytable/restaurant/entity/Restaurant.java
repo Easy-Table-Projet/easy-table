@@ -39,6 +39,7 @@ public class Restaurant extends BaseEntity {
         return Restaurant.builder()
                 .name(req.name())
                 .address(req.address())
+                .restaurantCategory(RestaurantCategory.valueOf(req.category()))
                 .isDeleted(false)
                 .build();
     }
