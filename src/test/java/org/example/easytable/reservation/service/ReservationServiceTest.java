@@ -98,9 +98,9 @@ class ReservationServiceTest {
                 .isDeleted(false)
                 .build();
 
-        when(reservationRepository.findAll()).thenReturn(Arrays.asList(reservation));
+        when(reservationRepository.findByRestaurantId(restaurantId)).thenReturn(Arrays.asList(reservation));
         // when
-        List<ReservationGetResDto> reservationList = reservationService.getReservation();
+        List<ReservationGetResDto> reservationList = reservationService.getReservationByRestaurant(restaurantId);
         // then
         assertEquals(1,reservationList.size());
         assertEquals(member.getId(), reservationList.get(0).getMemberId());
