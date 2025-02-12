@@ -32,6 +32,9 @@ public class Restaurant extends BaseEntity {
     @Column(nullable = false)
     private String address;
 
+    @Column(nullable = false)
+    private int validSeatCount;
+
     private boolean isDeleted;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -41,12 +44,21 @@ public class Restaurant extends BaseEntity {
         return Restaurant.builder()
                 .name(req.name())
                 .address(req.address())
+                .validSeatCount(req.validSeatCount())
                 .isDeleted(false)
                 .build();
     }
 
     public void updateRestaurantName(String name) {
         this.name = name;
+    }
+
+    public void changeValidSeatCount(int changedSeatCount) {
+        this.validSeatCount += changedSeatCount;
+    }
+
+    public boolean isReservationAvailable(int reservationHeadCount) {
+        return this.validSeatCount >= reservationHeadCount;
     }
 
     public void deleteRestaurant() {

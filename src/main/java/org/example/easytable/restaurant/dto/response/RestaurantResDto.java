@@ -7,13 +7,15 @@ import org.example.easytable.restaurant.entity.Restaurant;
 public record RestaurantResDto(
         Long id,
         String name,
-        String address
+        String address,
+        int validSeatCount
 ) {
-    public static RestaurantResDto from(Restaurant restaurant){
+    public static RestaurantResDto from(Restaurant restaurant) {
         return RestaurantResDto.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
+                .validSeatCount(restaurant.getValidSeatCount())
                 .build();
     }
 }
