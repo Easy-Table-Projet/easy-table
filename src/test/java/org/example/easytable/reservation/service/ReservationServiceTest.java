@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.entity.Member.MemberBuilder;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
@@ -17,6 +22,7 @@ import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
+import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.Test;
@@ -138,5 +144,96 @@ class ReservationServiceTest {
 
         // then
         verify(reservationRepository, times(1)).delete(reservation);
+    }
+
+    @Test
+    public void checkReservationSaveConcurrency() throws InterruptedException {
+        // given
+        Long restaurantId = 1L;
+        int validSeatCount = 30;
+        int threadCount = 30;
+        int guestCount = 3;
+        Restaurant targetRestaurant = Restaurant.newRestaurant(
+                new RestaurantCreateDto("target", "addr1", validSeatCount));
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger successCnt = new AtomicInteger();
+        AtomicInteger failCnt = new AtomicInteger();
+
+        // when
+        restaurantRepository.save(targetRestaurant);
+
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    reservationService.save(restaurantId, LocalDateTime.now(), guestCount);
+                    successCnt.incrementAndGet();
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    failCnt.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+
+        doneLatch.await();
+        executor.shutdown();
+
+        // then
+        assertEquals(validSeatCount / guestCount, successCnt.intValue());
+        assertEquals(validSeatCount - (validSeatCount / guestCount), failCnt.intValue());
+    }
+
+    @Test
+    public void checkReservationDeleteConcurrency() throws InterruptedException {
+        // given
+        Long restaurantId = 1L;
+        int validSeatCount = 30;
+        int threadCount = 30;
+        int guestCount = 3;
+        Restaurant targetRestaurant = Restaurant.newRestaurant(
+            new RestaurantCreateDto("target", "addr1", validSeatCount));
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger successCnt = new AtomicInteger();
+        AtomicInteger failCnt = new AtomicInteger();
+
+        // when
+        restaurantRepository.save(targetRestaurant);
+
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    ReservationCreateResDto currentReservation = reservationService.save(
+                        restaurantId, LocalDateTime.now(), guestCount);
+                    reservationService.deleteReservation(restaurantId, currentReservation.getReservationId());
+                    successCnt.incrementAndGet();
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    failCnt.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+
+        doneLatch.await();
+        executor.shutdown();
+
+        // then
+        assertEquals(validSeatCount, targetRestaurant.getValidSeatCount());
+        assertEquals(threadCount, successCnt.intValue());
+        assertEquals(0, failCnt.intValue());
     }
 }

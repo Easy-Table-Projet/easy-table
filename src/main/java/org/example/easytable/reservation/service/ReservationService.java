@@ -46,7 +46,7 @@ public class ReservationService {
                 .isDeleted(false)
                 .build();
 
-        saveReservationWithLock(createdReservation, foundRestaurant, guestCount);
+        saveReservationWithLock(foundRestaurant, createdReservation, guestCount);
 
         return new ReservationCreateResDto(
                 createdReservation.getId(), createdReservation.getMember().getId(),
@@ -76,7 +76,7 @@ public class ReservationService {
         }
 
         Restaurant foundRestaurant = findRestaurantWithLock(restaurantId);
-        deleteReservationWithLock(foundReservation, foundRestaurant);
+        deleteReservationWithLock(foundRestaurant, foundReservation);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
@@ -118,7 +118,7 @@ public class ReservationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveReservationWithLock(Reservation reservation, Restaurant restaurant, int guestCount) {
+    public void saveReservationWithLock(Restaurant restaurant, Reservation reservation, int guestCount) {
         // TODO: 중복되는 코드 AOP 등의 방식으로 분리할 것
         Config config = new Config();
         config.useSingleServer().setAddress("redis://127.0.0.1:6379");
@@ -156,7 +156,7 @@ public class ReservationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void deleteReservationWithLock(Reservation reservation, Restaurant restaurant) {
+    public void deleteReservationWithLock(Restaurant restaurant, Reservation reservation) {
         Config config = new Config();
         config.useSingleServer().setAddress("redis://127.0.0.1:6379");
         RedissonClient redissonClient = Redisson.create(config);
