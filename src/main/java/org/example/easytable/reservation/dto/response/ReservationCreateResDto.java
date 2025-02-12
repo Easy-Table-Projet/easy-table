@@ -9,10 +9,10 @@ import org.example.easytable.reservation.entity.ReservationStatus;
 @Getter
 public class ReservationCreateResDto {
 
-    private final Long reservation_id;
-    private final Long member_id;
-    private final Long restaurant_id;
-    private final LocalDateTime reservation_time;
+    private final Long reservationId;
+    private final Long memberId;
+    private final Long restaurantId;
+    private final LocalDateTime reservationTime;
     private final ReservationStatus status;
 
 }
