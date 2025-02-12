@@ -25,8 +25,7 @@ public class ReservationService {
     private final RestaurantRepository restaurantRepository;
 
     @Transactional
-    public ReservationCreateResDto save(Long restaurantId,
-            LocalDateTime reservationTime) {
+    public ReservationCreateResDto save(Long restaurantId, LocalDateTime reservationTime) {
 
         Restaurant foundRestaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));

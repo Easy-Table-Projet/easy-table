@@ -63,7 +63,7 @@ class ReservationServiceTest {
         // then
         verify(restaurantRepository, times(1)).findById(restaurantId);
         verify(reservationRepository, times(1)).save(any(Reservation.class));
-        assertEquals(reservation.getRestaurant().getId(), savedReservation.getRestaurant_id());
+        assertEquals(reservation.getRestaurant().getId(), savedReservation.getRestaurantId());
     }
 
     @Test
@@ -103,9 +103,9 @@ class ReservationServiceTest {
         List<ReservationGetResDto> reservationList = reservationService.getReservation();
         // then
         assertEquals(1,reservationList.size());
-        assertEquals(member.getId(), reservationList.get(0).getMember_id());
-        assertEquals(restaurant.getId(), reservationList.get(0).getRestaurant_id());
-        assertEquals(reservationTime, reservationList.get(0).getReservation_time());
+        assertEquals(member.getId(), reservationList.get(0).getMemberId());
+        assertEquals(restaurant.getId(), reservationList.get(0).getRestaurantId());
+        assertEquals(reservationTime, reservationList.get(0).getReservationTime());
         assertEquals(ReservationStatus.CONFIRMED, reservationList.get(0).getStatus());
     }
 
