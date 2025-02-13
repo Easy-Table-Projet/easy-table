@@ -1,6 +1,5 @@
 package org.example.easytable.filter;
 
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +23,6 @@ public class JwtFilter extends OncePerRequestFilter {
 	private final JwtUtil jwtUtil;
 	private final UserDetailsService userDetailsService;
 
-
 	@Override
 	protected void doFilterInternal(
 			HttpServletRequest request,
@@ -39,15 +37,16 @@ public class JwtFilter extends OncePerRequestFilter {
 		}
 
 		String jwt = authorizationHeader.substring(7);
-		String email = jwtUtil.extractEmail(jwt);
 
-		if (email == null || !jwtUtil.isTokenValid(jwt, email)) {
+		try {
+			String email = jwtUtil.extractEmail(jwt);
+			UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+			setAuthentication(request, userDetails);
+		} catch (Exception e) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-		setAuthentication(request, userDetails);
 		filterChain.doFilter(request, response);
 	}
 
@@ -66,4 +65,3 @@ public class JwtFilter extends OncePerRequestFilter {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
 }
-

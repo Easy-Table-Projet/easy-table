@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
-//@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasRole('USER')")
 @RequiredArgsConstructor
 public class MemberController {
 
