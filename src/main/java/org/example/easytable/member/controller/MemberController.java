@@ -1,61 +1,42 @@
 package org.example.easytable.member.controller;
 
-import org.example.easytable.member.dto.response.MemberGetResDto;
-import org.springframework.http.HttpStatus;
+import org.example.easytable.member.dto.response.MeResDto;
+import org.example.easytable.utils.AuthUtil;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.servlet.http.HttpServletRequest;
-import org.example.easytable.common.filter.JwtFilter;
-import org.example.easytable.common.utils.JwtUtil;
-import org.example.easytable.member.dto.request.MemberUpdateReqDto;
-import org.example.easytable.member.dto.response.MemberUpdateResDto;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import org.example.easytable.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/members")
+//@PreAuthorize("hasRole('USER')")
 @RequiredArgsConstructor
 public class MemberController {
 
 	private final MemberService memberService;
-	private final JwtUtil jwtUtil;
-	// 유저 단건 조회
-	@GetMapping("/{memberId}")
-	public ResponseEntity<MemberGetResDto> getMember(
-		@PathVariable Long memberId,
-		HttpServletRequest request
-	) {
-		// request 헤더에 담긴 토큰을 추출해서 담기
-		String token = JwtFilter.extractToken(request);
 
-		// 추출한 토큰으로부터 유저 아이디를 찾기
-		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token); // 인스턴스 메서드 호출
 
-		// 유저 정보 조회
-		MemberGetResDto responseDto = memberService.getMemberById(memberId, userIdFromToken);
+	@GetMapping("/me")
+	public ResponseEntity<MeResDto> getAuthenticatedUserInfo() {
+		// 인증된 사용자의 ID와 역할 목록을 가져옵니다.
+		Long userId = AuthUtil.getId();
+		List<String> userRoles = AuthUtil.getRoles();
 
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+		// DTO를 사용하여 응답 반환
+		MeResDto response = MeResDto.of(userId, userRoles);
+
+		return ResponseEntity.ok(response);
 	}
 
-	// 유저 수정
-	@PatchMapping("/{memberId}")
-	public MemberUpdateResDto updateMember(
-		@PathVariable Long memberId,
-		@RequestBody MemberUpdateReqDto updateUserRequestDto,
-		HttpServletRequest request
-	) {
-		// request헤더에 담긴 토큰을 추출해서 담기
-		String token = JwtFilter.extractToken(request);
 
-		// 그렇게 담은 추출한 토큰으로부터 유저아이디를 찾기
-		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token); // 인스턴스 메서드 호출
-
-		return memberService.updateMember(memberId, updateUserRequestDto, userIdFromToken);
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+		memberService.deleteUser(id);
+		return ResponseEntity.noContent().build();
 	}
+
 }
+
