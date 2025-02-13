@@ -112,24 +112,26 @@ public class MemberAuthService {
 	}
 
 	// 회원 탈퇴
-	public void resign(String token, String password) {
+	@Transactional
+	public void deleteMember(Long memberId, String token) {
+		// 1. JWT 토큰에서 memberId 추출
+		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token);
 
-		// 1. JWT 토큰에서 userId 추출
-		Long memberId = jwtUtil.getMemberIdFromToken(token);  // 멤버Id로 변경
-
-		// 2. 비밀번호 확인
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));  // memberRepository 직접 사용하여 조회
-
-		boolean passwordMatches = bcrypt.matches(password, member.getPassword());
-		if (!passwordMatches) {
-			throw new CustomException(ErrorCode.INVALID_PASSWORD);  // 비밀번호가 일치하지 않으면 예외 발생
+		// 2. 요청한 memberId와 토큰의 userId가 같은지 확인
+		if (!memberId.equals(userIdFromToken)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없습니다.");
 		}
 
-		// 3. 탈퇴 처리: 사용자의 상태를 "탈퇴"로 변경
-		member.inActivate();  // 'active' 플래그를 false로 설정하여 탈퇴 처리
-		memberRepository.save(member);  // DB에 반영
+		// 3. 회원 조회
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND, "존재하지 않는 회원입니다."));
 
-		log.info("사용자가 탈퇴했습니다. userId: {}", memberId);
+		// 4. 회원 삭제 (DB에서 완전히 제거 or active 플래그 사용)
+		memberRepository.delete(member); // 완전히 삭제하는 경우
+
+		// member.setActive(false); // soft delete 방식
+		// memberRepository.save(member);
+
+		log.info("회원 삭제 완료: {}", memberId);
 	}
 }

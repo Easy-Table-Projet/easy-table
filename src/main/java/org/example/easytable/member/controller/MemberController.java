@@ -50,11 +50,8 @@ public class MemberController {
 		@RequestBody MemberUpdateReqDto updateUserRequestDto,
 		HttpServletRequest request
 	) {
-		// request헤더에 담긴 토큰을 추출해서 담기
 		String token = JwtFilter.extractToken(request);
-
-		// 그렇게 담은 추출한 토큰으로부터 유저아이디를 찾기
-		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token); // 인스턴스 메서드 호출
+		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token);
 
 		return memberService.updateMember(memberId, updateUserRequestDto, userIdFromToken);
 	}

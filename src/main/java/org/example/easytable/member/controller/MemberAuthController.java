@@ -3,6 +3,7 @@ package org.example.easytable.member.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,19 +52,16 @@ public class MemberAuthController {
 
 	// 유저 탈퇴
 	@DeleteMapping("/{memberId}")
-	public ResponseEntity<MemberResignResDto> ResignUser(
-		@RequestBody MemberResignReqDto requestDto,
+	public ResponseEntity<Void> deleteMember(
+		@PathVariable Long memberId,
 		HttpServletRequest request
 	) {
-		// 1. Authorization 헤더에서 JWT 토큰 추출
+		// Authorization 헤더에서 JWT 토큰 추출
 		String token = JwtFilter.extractToken(request);
 
-		// 2. 유저 탈퇴 서비스 호출
-		memberAuthService.resign(token, requestDto.getPassword());
+		// 회원 삭제 서비스 호출
+		memberAuthService.deleteMember(memberId, token);
 
-		// 탈퇴 완료 메시지와 함께 200 OK 응답 반환
-		MemberResignResDto responseDto = new MemberResignResDto();
-
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
