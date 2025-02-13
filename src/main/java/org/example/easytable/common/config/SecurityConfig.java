@@ -1,5 +1,7 @@
 package org.example.easytable.common.config;
 
+import org.example.easytable.common.filter.JwtFilter;
+import org.example.easytable.common.utils.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -9,10 +11,25 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+	private final JwtUtil jwtUtil;
+
+	// JwtUtil을 생성자로 주입받습니다.
+	public SecurityConfig(JwtUtil jwtUtil) {
+		this.jwtUtil = jwtUtil;
+	}
+
+	@Bean(name = "securityJwtFilter")
+	public JwtFilter jwtFilter() {
+		return new JwtFilter(jwtUtil);  // JwtFilter 빈 생성
+	}
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -23,7 +40,8 @@ public class SecurityConfig {
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
 			)
 			.formLogin(form -> form.disable()) // 기본 로그인 폼 비활성화
-			.httpBasic(httpBasic -> httpBasic.disable()); // HTTP 기본 인증 비활성화
+			.httpBasic(httpBasic -> httpBasic.disable()) // HTTP 기본 인증 비활성화
+			.addFilterBefore(jwtFilter(), SecurityContextHolderAwareRequestFilter.class); // JwtFilter를 인증 필터로 추가
 
 		return http.build();
 	}

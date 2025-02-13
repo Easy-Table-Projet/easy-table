@@ -3,7 +3,6 @@ package org.example.easytable.common.config;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.example.easytable.common.filter.JwtFilter;
 import org.example.easytable.common.utils.JwtUtil;
 

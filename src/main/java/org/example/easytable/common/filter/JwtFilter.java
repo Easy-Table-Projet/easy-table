@@ -1,7 +1,10 @@
 package org.example.easytable.common.filter;
 
 import java.io.IOException;
+import java.util.Collections;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.util.PatternMatchUtils;
 
 import jakarta.servlet.Filter;
@@ -12,6 +15,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.easytable.common.utils.JwtUtil;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,7 +58,11 @@ public class JwtFilter implements Filter {
 		// 토큰 검증
 		if (token != null && jwtUtil.validateToken(token)) {
 			Long memberId = jwtUtil.getMemberIdFromToken(token);
-			request.setAttribute("memberId", memberId);
+			// SecurityContext에 인증 정보 설정
+			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+				memberId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+			);
+			SecurityContextHolder.getContext().setAuthentication(authentication);  // 인증 정보를 SecurityContext에 설정
 			log.info("인증된 사용자 ID: {}", memberId);
 		} else {
 			log.warn("유효하지 않은 토큰 -> 401 응답 반환");
