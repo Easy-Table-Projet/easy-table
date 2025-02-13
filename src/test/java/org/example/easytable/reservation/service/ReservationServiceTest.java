@@ -18,6 +18,7 @@ import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
+import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +44,7 @@ class ReservationServiceTest {
         Long restaurantId = 1L;
         LocalDateTime reservationTime = LocalDateTime.now();
         Restaurant restaurant
-                = new Restaurant(restaurantId, "restaurant", "address", false, null);
+                = new Restaurant(restaurantId, "restaurant", "address", false, RestaurantCategory.KOREAN ,null);
 
         Reservation reservation = Reservation.builder()
                 .member(null)
@@ -98,9 +99,9 @@ class ReservationServiceTest {
                 .isDeleted(false)
                 .build();
 
-        when(reservationRepository.findAll()).thenReturn(Arrays.asList(reservation));
+        when(reservationRepository.findByRestaurantId(restaurantId)).thenReturn(Arrays.asList(reservation));
         // when
-        List<ReservationGetResDto> reservationList = reservationService.getReservation();
+        List<ReservationGetResDto> reservationList = reservationService.getReservationByRestaurant(restaurantId);
         // then
         assertEquals(1,reservationList.size());
         assertEquals(member.getId(), reservationList.get(0).getMemberId());

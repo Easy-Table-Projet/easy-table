@@ -4,6 +4,7 @@ import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
+import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ public class RestaurantServiceTest {
 
     @BeforeEach
     void setUp() {
-        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소");
+        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소","KOREAN");
         restaurant = Restaurant.newRestaurant(restaurantCreateDto);
         ReflectionTestUtils.setField(restaurant, "id", 1L);
     }
@@ -86,15 +87,17 @@ public class RestaurantServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Restaurant> restaurantPage = new PageImpl<>(List.of(restaurant), pageable, 1);
 
-        when(restaurantRepository.findAllRestaurantByTitle("가게이름", pageable))
+        RestaurantCategory category = RestaurantCategory.valueOf("KOREAN");
+
+        when(restaurantRepository.findAllRestaurantByTitleAndCategory("가게이름", category, pageable))
                 .thenReturn(restaurantPage);
 
         // when
-        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitle("가게이름", pageable);
+        Page<RestaurantResDto> result = restaurantService.findAllRestaurantByTitleAndCategory("가게이름", "KOREAN", pageable);
 
         // then
         assertThat(result.getTotalElements()).isEqualTo(1);
-        verify(restaurantRepository, times(1)).findAllRestaurantByTitle("가게이름", pageable);
+        verify(restaurantRepository, times(1)).findAllRestaurantByTitleAndCategory("가게이름", category, pageable);
     }
 
     @Test

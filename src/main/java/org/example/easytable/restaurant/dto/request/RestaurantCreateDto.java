@@ -4,5 +4,6 @@ public record RestaurantCreateDto(
         String name,
         String address,
         int validSeatCount
+        String category
 ) {
 }
