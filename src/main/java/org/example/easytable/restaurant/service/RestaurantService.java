@@ -1,10 +1,13 @@
 package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.exception.CustomException;
+import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
+import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,30 +27,42 @@ public class RestaurantService {
 
     @Transactional(readOnly = true)
     public RestaurantResDto findRestaurantById(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
-        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND));
         return RestaurantResDto.from(restaurant);
     }
 
     @Transactional(readOnly = true)
-    public Page<RestaurantResDto> findAllRestaurantByTitle(
+    public Page<RestaurantResDto> findAllRestaurantByTitleAndCategory(
             String restaurantName,
+            String category,
             Pageable pageable) { //todo: 주소 등 추가 검색 조건 파라미터 추가
-        Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitle(restaurantName, pageable);
-        //todo: 빈 리스트 일 경우 404 예외처리 필요.
+
+        RestaurantCategory enumCategory = null;
+
+        if (category != null && !category.isEmpty()) {
+            enumCategory = RestaurantCategory.valueOf(category);
+        }
+        Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitleAndCategory(restaurantName,
+                enumCategory, pageable);
+        if (restaurants.isEmpty()) {
+            throw CustomException.of(ErrorCode.NOT_FOUND, "해당 조건에 맞는 가게가 없습니다.");
+        }
         return restaurants.map(RestaurantResDto::from);
     }
+
     @Transactional
     public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto dto) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
-        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND));
         restaurant.updateRestaurantName(dto.restaurantName());
         return RestaurantResDto.from(restaurant);
     }
+
     @Transactional
     public void deleteRestaurantName(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
-        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND));
         restaurant.deleteRestaurant();
     }
 }

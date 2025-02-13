@@ -32,10 +32,11 @@ public class RestaurantController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<RestaurantResDto>> findAllRestaurantByTitle(
+    public ResponseEntity<Page<RestaurantResDto>> findAllRestaurantByTitleAndCategory(
             @RequestParam(required = false) String restaurantName,
+            @RequestParam(required = false) String category,
             Pageable pageable) {
-        return ResponseEntity.ok(restaurantService.findAllRestaurantByTitle(restaurantName, pageable));
+        return ResponseEntity.ok(restaurantService.findAllRestaurantByTitleAndCategory(restaurantName,category, pageable));
     }
 
     @PatchMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
