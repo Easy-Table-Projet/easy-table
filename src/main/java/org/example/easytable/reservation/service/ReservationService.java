@@ -56,9 +56,10 @@ public class ReservationService {
                 createdReservation.getStatus());
     }
 
-    public List<ReservationGetResDto> getReservation() {
 
-        List<Reservation> reservationList = reservationRepository.findAll();
+    public List<ReservationGetResDto> getReservationByRestaurant(Long restaurantId) {
+
+        List<Reservation> reservationList = reservationRepository.findByRestaurantId(restaurantId);
 
         return reservationList.stream().map(reservation -> new ReservationGetResDto(
                         reservation.getMember().getId(),
@@ -66,6 +67,17 @@ public class ReservationService {
                         reservation.getReservationTime(),
                         reservation.getStatus()))
                 .collect(Collectors.toList());
+    }
+
+    public List<ReservationGetResDto> getReservationByMember(Long memberId) {
+
+        List<Reservation> reservationList = reservationRepository.findByMemberId(memberId);
+
+        return reservationList.stream().map(reservation -> new ReservationGetResDto(
+                reservation.getMember().getId(),
+                reservation.getRestaurant().getId(),
+                reservation.getReservationTime(),
+                reservation.getStatus())).collect(Collectors.toList());
     }
 
     @Transactional
@@ -104,4 +116,5 @@ public class ReservationService {
         // TODO: reservation에 예약자 수 추가할 것
         // TODO: reservation에서 예약 인원 가져와 restaurant의 ValidSeatCount에 반영하도록 구현할 것
     }
+
 }

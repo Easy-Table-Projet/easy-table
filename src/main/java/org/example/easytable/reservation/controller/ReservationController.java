@@ -41,8 +41,19 @@ public class ReservationController {
     public ResponseEntity<List<ReservationGetResDto>> getReservation(
             @PathVariable("restaurantId") Long restaurantId
     ) {
-        //TODO : 사용자가 가진 예약 조회, 특정 사용자의 예약 조회(?)
-        List<ReservationGetResDto> reservation = reservationService.getReservation();
+
+        List<ReservationGetResDto> reservation = reservationService.getReservationByRestaurant(
+                restaurantId);
+
+        return new ResponseEntity<>(reservation, HttpStatus.OK);
+    }
+
+    @GetMapping("/{memberId}/reservation")
+    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember(
+            @PathVariable("memberId") Long memberId
+    ) {
+        List<ReservationGetResDto> reservation = reservationService.getReservationByMember(
+                memberId);
 
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }

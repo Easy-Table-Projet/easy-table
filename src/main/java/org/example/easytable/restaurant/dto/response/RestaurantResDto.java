@@ -2,13 +2,15 @@ package org.example.easytable.restaurant.dto.response;
 
 import lombok.Builder;
 import org.example.easytable.restaurant.entity.Restaurant;
+import org.example.easytable.restaurant.entity.RestaurantCategory;
 
 @Builder
 public record RestaurantResDto(
         Long id,
         String name,
         String address,
-        int validSeatCount
+        int validSeatCount,
+        RestaurantCategory category
 ) {
     public static RestaurantResDto from(Restaurant restaurant) {
         return RestaurantResDto.builder()
@@ -16,6 +18,7 @@ public record RestaurantResDto(
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .validSeatCount(restaurant.getValidSeatCount())
+                .category(restaurant.getRestaurantCategory())
                 .build();
     }
 }

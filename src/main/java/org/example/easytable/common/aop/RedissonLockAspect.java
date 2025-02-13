@@ -40,6 +40,7 @@ public class RedissonLockAspect {
         ) {
             RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(evaluatedKey);
             RLock rLock = redissonLock.readOnly() ? readWriteLock.readLock() : readWriteLock.writeLock();
+            // lock 획득 실패 시 내부적으로 Redis pub/sub 기반의 대기
             rLock.lock(ttl, TimeUnit.MILLISECONDS);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
