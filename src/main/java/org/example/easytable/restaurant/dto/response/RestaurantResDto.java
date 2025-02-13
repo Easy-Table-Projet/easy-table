@@ -9,13 +9,15 @@ public record RestaurantResDto(
         Long id,
         String name,
         String address,
+        int validSeatCount,
         RestaurantCategory category
 ) {
-    public static RestaurantResDto from(Restaurant restaurant){
+    public static RestaurantResDto from(Restaurant restaurant) {
         return RestaurantResDto.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
+                .validSeatCount(restaurant.getValidSeatCount())
                 .category(restaurant.getRestaurantCategory())
                 .build();
     }
