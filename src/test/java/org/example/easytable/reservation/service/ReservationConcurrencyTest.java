@@ -4,10 +4,13 @@ import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 // 실제로 발생할 수 있는 동시성 문제 검증을 위해 mock 객체 대신 실제 객체를 주입받음
 @ExtendWith(SpringExtension.class)
@@ -25,6 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ReservationConcurrencyTest {
     private final ReservationService reservationService;
     private final RestaurantRepository restaurantRepository;
+
+    private Long restaurantId;
+    private int validSeatCount;
+    private int threadCount;
+    private int guestCount;
 
     @Autowired
     public ReservationConcurrencyTest(
@@ -34,17 +42,23 @@ public class ReservationConcurrencyTest {
         this.restaurantRepository = restaurantRepository;
     }
 
+    @BeforeEach
+    @Commit
+    public void init() {
+        restaurantId = 1L;
+        validSeatCount = 30;
+        threadCount = 30;
+        guestCount = 3;
+
+        //restaurantRepository.save(Restaurant.newRestaurant(
+        //        new RestaurantCreateDto("target", "addr1", validSeatCount)));
+    }
+
     @Test
     @Transactional
+    @Rollback
     public void checkReservationSaveConcurrency() throws InterruptedException {
         // given
-        Long restaurantId = 1L;
-        int validSeatCount = 30;
-        int threadCount = 30;
-        int guestCount = 3;
-        Restaurant targetRestaurant = Restaurant.newRestaurant(
-            new RestaurantCreateDto("target", "addr1", validSeatCount));
-
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
@@ -52,7 +66,6 @@ public class ReservationConcurrencyTest {
         AtomicInteger failCnt = new AtomicInteger();
 
         // when
-        restaurantRepository.save(targetRestaurant);
 
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
@@ -81,15 +94,9 @@ public class ReservationConcurrencyTest {
 
     @Test
     @Transactional
+    @Rollback
     public void checkReservationDeleteConcurrency() throws InterruptedException {
         // given
-        Long restaurantId = 1L;
-        int validSeatCount = 30;
-        int threadCount = 30;
-        int guestCount = 3;
-        Restaurant targetRestaurant = Restaurant.newRestaurant(
-            new RestaurantCreateDto("target", "addr1", validSeatCount));
-
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
@@ -97,8 +104,6 @@ public class ReservationConcurrencyTest {
         AtomicInteger failCnt = new AtomicInteger();
 
         // when
-        restaurantRepository.save(targetRestaurant);
-
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
@@ -122,6 +127,9 @@ public class ReservationConcurrencyTest {
         executor.shutdown();
 
         // then
+        Restaurant targetRestaurant = restaurantRepository.findById(restaurantId).orElse(null);
+
+        assertNotNull(targetRestaurant);
         assertEquals(validSeatCount, targetRestaurant.getValidSeatCount());
         assertEquals(threadCount, successCnt.intValue());
         assertEquals(0, failCnt.intValue());
