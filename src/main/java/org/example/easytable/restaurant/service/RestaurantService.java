@@ -1,6 +1,7 @@
 package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.dto.PageResponse;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
@@ -9,6 +10,7 @@ import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
+    private static final String CACHE_KEY = "top100Restaurants";
+
 
     public RestaurantResDto createRestaurant(RestaurantCreateDto dto) {
         Restaurant restaurant = Restaurant.newRestaurant(dto);
@@ -53,12 +57,12 @@ public class RestaurantService {
         }
         return restaurants.map(RestaurantResDto::from);
     }
-
+    @Cacheable(value = CACHE_KEY)
     @Transactional(readOnly = true)
-    public Page<RestaurantResDto> findTop100RestaurantList(Pageable pageable) {
+    public PageResponse<RestaurantResDto> findTop100RestaurantList(Pageable pageable) {
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         Page<Restaurant> restaurants = restaurantRepository.findTop100RestaurantList(oneMonthAgo, pageable);
-        return restaurants.map(RestaurantResDto::from);
+        return new PageResponse<>(restaurants.map(RestaurantResDto::from));
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package org.example.easytable.restaurant.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.dto.PageResponse;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
@@ -41,7 +42,7 @@ public class RestaurantController {
     }
 
     @GetMapping("/top100")
-    public ResponseEntity<Page<RestaurantResDto>> findTop100RestaurantList(
+    public ResponseEntity<PageResponse<RestaurantResDto>> findTop100RestaurantList(
             Pageable pageable) {
         return ResponseEntity.ok(restaurantService.findTop100RestaurantList(pageable));
     }
