@@ -39,6 +39,7 @@ public class ReservationService {
                 .restaurant(foundRestaurant)
                 .reservationTime(reservationTime)
                 .status(ReservationStatus.CONFIRMED)
+                .guestCount(guestCount)
                 .isDeleted(false)
                 .build();
 
@@ -105,10 +106,9 @@ public class ReservationService {
     @RedissonLock(key = "'lock:restaurant:' + #restaurant.getId()")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteReservationWithLock(Restaurant restaurant, Reservation reservation) {
-        // 비즈니스 로직 수행
         reservationRepository.delete(reservation);
-        // TODO: reservation에 예약자 수 추가할 것
-        // TODO: reservation에서 예약 인원 가져와 restaurant의 ValidSeatCount에 반영하도록 구현할 것
+        restaurant.changeValidSeatCount(reservation.getGuestCount());
+        restaurantRepository.save(restaurant);
     }
 
 }

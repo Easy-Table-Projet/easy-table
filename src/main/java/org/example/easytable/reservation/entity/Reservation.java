@@ -34,6 +34,8 @@ public class Reservation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 
+    private int guestCount;
+
     private boolean isDeleted;
 }
 
