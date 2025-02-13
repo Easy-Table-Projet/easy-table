@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query("""
             SELECT r
@@ -19,5 +21,16 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     Page<Restaurant> findAllRestaurantByTitleAndCategory(
             @Param("restaurantName") String restaurantName,
             @Param("category") RestaurantCategory enumCategory,
+            Pageable pageable);
+
+    @Query("""
+    SELECT r FROM Restaurant r
+    LEFT JOIN r.reservations res
+    WHERE res.reservationTime >= :oneMonthAgo
+    GROUP BY r.id, r.address, r.createdAt, r.isDeleted, r.name, r.restaurantCategory, r.updatedAt
+    ORDER BY COUNT(res.id) DESC
+""")
+    Page<Restaurant> findTop100RestaurantList(
+            @Param("oneMonthAgo") LocalDateTime oneMonthAgo,
             Pageable pageable);
 }

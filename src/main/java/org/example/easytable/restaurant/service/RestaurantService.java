@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class RestaurantService {
@@ -37,6 +39,7 @@ public class RestaurantService {
             String restaurantName,
             String category,
             Pageable pageable) { //todo: 주소 등 추가 검색 조건 파라미터 추가
+        //todo: 거리순 or 인기순으로 정렬 로직으로 수정 그 후 레디스 고민.
 
         RestaurantCategory enumCategory = null;
 
@@ -48,6 +51,13 @@ public class RestaurantService {
         if (restaurants.isEmpty()) {
             throw CustomException.of(ErrorCode.NOT_FOUND, "해당 조건에 맞는 가게가 없습니다.");
         }
+        return restaurants.map(RestaurantResDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RestaurantResDto> findTop100RestaurantList(Pageable pageable) {
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        Page<Restaurant> restaurants = restaurantRepository.findTop100RestaurantList(oneMonthAgo, pageable);
         return restaurants.map(RestaurantResDto::from);
     }
 

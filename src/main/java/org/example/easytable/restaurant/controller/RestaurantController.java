@@ -36,7 +36,14 @@ public class RestaurantController {
             @RequestParam(required = false) String restaurantName,
             @RequestParam(required = false) String category,
             Pageable pageable) {
-        return ResponseEntity.ok(restaurantService.findAllRestaurantByTitleAndCategory(restaurantName,category, pageable));
+        return ResponseEntity.ok(restaurantService.findAllRestaurantByTitleAndCategory(restaurantName, category,
+                pageable));
+    }
+
+    @GetMapping("/top100")
+    public ResponseEntity<Page<RestaurantResDto>> findTop100RestaurantList(
+            Pageable pageable) {
+        return ResponseEntity.ok(restaurantService.findTop100RestaurantList(pageable));
     }
 
     @PatchMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
