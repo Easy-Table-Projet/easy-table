@@ -19,7 +19,7 @@ public class SpelUtil {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Object[] args = joinPoint.getArgs();
         MethodBasedEvaluationContext context = new MethodBasedEvaluationContext(
-            null, signature.getMethod(), args, nameDiscoverer);
+                null, signature.getMethod(), args, nameDiscoverer);
 
         Expression expression = parser.parseExpression(keyExpression);
         return expression.getValue(context, String.class);

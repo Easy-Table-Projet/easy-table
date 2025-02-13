@@ -1,9 +1,5 @@
 package org.example.easytable.reservation.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.example.easytable.exception.CustomException;
@@ -16,16 +12,14 @@ import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
-import org.redisson.Redisson;
-import org.redisson.api.RLock;
-import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -97,7 +91,7 @@ public class ReservationService {
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public Restaurant findRestaurantWithLock(Long restaurantId) {
         return restaurantRepository.findById(restaurantId)
-            .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
     }
 
     @RedissonLock(key = "'lock:restaurant:' + #restaurant.getId()")
