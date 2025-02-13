@@ -20,7 +20,7 @@ public class MemberSignUpResDto {
 		this.memberName = member.getMemberName();
 		this.email = member.getEmail();
 		this.address = member.getAddress();
-		this.userType = member.getUserType();
+		this.userType = member.getUserType().name();
 		this.createdAt = member.getCreatedAt();
 	}
 }

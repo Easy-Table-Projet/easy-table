@@ -20,7 +20,7 @@ public class MemberGetResDto {
 		this.name = member.getMemberName();
 		this.email = member.getEmail();
 		this.address = member.getAddress();
-		this.userType = member.getUserType();
+		this.userType = member.getUserType().name();
 		this.createdAt = member.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 		this.updatedAt = member.getUpdatedAt() != null
 			? member.getUpdatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))

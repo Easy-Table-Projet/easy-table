@@ -8,6 +8,7 @@ import org.example.easytable.member.dto.request.MemberUpdateReqDto;
 import org.example.easytable.member.dto.response.MemberUpdateResDto;
 import org.example.easytable.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 
 	private final MemberRepository memberRepository;
@@ -41,6 +43,7 @@ public class MemberService {
 	}
 
 	// 유저 수정
+	@Transactional
 	public MemberUpdateResDto updateMember(Long memberId, MemberUpdateReqDto memberUpdateReqDto, Long signInMemberId) {
 		Member member = findMemberById(memberId);
 
@@ -49,8 +52,7 @@ public class MemberService {
 		}
 
 		member.updateMember(memberUpdateReqDto);
-		Member savedMember = memberRepository.save(member);
-
-		return new MemberUpdateResDto(savedMember);
+		// 영속 상태의 엔티티가 자동으로 변경 감지(Dirty Checking)
+		return new MemberUpdateResDto(member);
 	}
 }

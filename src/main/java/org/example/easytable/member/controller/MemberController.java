@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 
 	private final MemberService memberService;
-
+	private final JwtUtil jwtUtil;
 	// 유저 단건 조회
 	@GetMapping("/{memberId}")
 	public ResponseEntity<MemberGetResDto> getMember(
@@ -35,13 +35,14 @@ public class MemberController {
 		String token = JwtFilter.extractToken(request);
 
 		// 추출한 토큰으로부터 유저 아이디를 찾기
-		Long userIdFromToken = JwtUtil.getMemberIdFromToken(token);
+		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token); // 인스턴스 메서드 호출
 
 		// 유저 정보 조회
 		MemberGetResDto responseDto = memberService.getMemberById(memberId, userIdFromToken);
 
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
+
 	// 유저 수정
 	@PatchMapping("/{memberId}")
 	public MemberUpdateResDto updateMember(
@@ -53,8 +54,8 @@ public class MemberController {
 		String token = JwtFilter.extractToken(request);
 
 		// 그렇게 담은 추출한 토큰으로부터 유저아이디를 찾기
-		Long userIdFromToken = JwtUtil.getMemberIdFromToken(token);
+		Long userIdFromToken = jwtUtil.getMemberIdFromToken(token); // 인스턴스 메서드 호출
 
-		return memberService.updateMember(memberId, updateUserRequestDto,userIdFromToken);
+		return memberService.updateMember(memberId, updateUserRequestDto, userIdFromToken);
 	}
 }
