@@ -12,6 +12,8 @@ public enum ErrorCode {
 	USER_NOT_FOUND("사용자를 찾을 수 없습니다."),
 	INVALID_PASSWORD("잘못된 비밀번호입니다."),
 	ID_MISMATCH("ID가 일치하지 않습니다."),
-	ALREADY_DELETED_USER("사용자가 탈퇴했습니다.");
+	ALREADY_DELETED_USER("사용자가 탈퇴했습니다."),
+	INTERNAL_SERVER_ERROR("서버 내부 오류"),
+	INVALID_USER_TYPE("유효하지 않은 userType 값입니다.");
 	private final String message;
 }
