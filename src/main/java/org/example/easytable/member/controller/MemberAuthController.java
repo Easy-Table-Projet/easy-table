@@ -11,10 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.easytable.common.filter.JwtFilter;
-import org.example.easytable.member.dto.request.MemberResignReqDto;
 import org.example.easytable.member.dto.request.MemberSignInReqDto;
 import org.example.easytable.member.dto.request.MemberSignUpReqDto;
-import org.example.easytable.member.dto.response.MemberResignResDto;
 import org.example.easytable.member.dto.response.MemberSignInResDto;
 import org.example.easytable.member.dto.response.MemberSignUpResDto;
 import org.example.easytable.member.service.MemberAuthService;

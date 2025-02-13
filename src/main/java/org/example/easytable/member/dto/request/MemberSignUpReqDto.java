@@ -1,7 +1,6 @@
 package org.example.easytable.member.dto.request;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 public class MemberSignUpReqDto {
@@ -17,6 +16,6 @@ public class MemberSignUpReqDto {
 		this.membername = membername;
 		this.password = password;
 		this.address = address;
-		this.userType = (userType != null && !userType.isBlank()) ? userType : "USER";
+		this.userType = userType;
 	}
 }

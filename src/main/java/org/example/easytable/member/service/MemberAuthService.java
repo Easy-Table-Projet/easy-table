@@ -14,6 +14,7 @@ import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.common.utils.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.example.easytable.member.entity.UserType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +31,13 @@ public class MemberAuthService {
 
 	// 유저 회원가입 로직
 	@Transactional
-	public MemberSignUpResDto signUp(MemberSignUpReqDto requestDto) {
+	public MemberSignUpResDto signUp(MemberSignUpReqDto memberSignUpReqDto) {
 		// userType 기본값을 "USER"로 설정
-		String userTypeStr = requestDto.getUserType();
+		String userTypeStr = memberSignUpReqDto.getUserType();
 		if (userTypeStr == null || userTypeStr.isBlank()) {
 			log.warn("userType이 null 또는 빈 문자열입니다. 기본값 USER로 설정.");
 			userTypeStr = "USER";
 		}
-
 		UserType userType;
 		try {
 			userType = UserType.valueOf(userTypeStr.toUpperCase());
@@ -46,25 +46,25 @@ public class MemberAuthService {
 			throw new CustomException(ErrorCode.INVALID_USER_TYPE, "Invalid userType: " + userTypeStr);
 		}
 
-		log.info("이메일 중복 체크 시작: {}", requestDto.getEmail());
+		log.info("이메일 중복 체크 시작: {}", memberSignUpReqDto.getEmail());
 
 		// 이메일 중복 체크
-		memberRepository.findByEmail(requestDto.getEmail()).ifPresent(member -> {
-			log.info("이미 존재하는 이메일입니다. 이메일: {}", requestDto.getEmail());
+		memberRepository.findByEmail(memberSignUpReqDto.getEmail()).ifPresent(member -> {
+			log.info("이미 존재하는 이메일입니다. 이메일: {}", memberSignUpReqDto.getEmail());
 			throw new CustomException(ErrorCode.EMAIL_EXISTS);
 		});
 
 		log.info("비밀번호 암호화 시작");
 		// 비밀번호 암호화
-		String encryptedPassword = bcrypt.encode(requestDto.getPassword());
+		String encryptedPassword = bcrypt.encode(memberSignUpReqDto.getPassword());
 
-		log.info("Member 객체 생성 시작: {}", requestDto.getEmail());
+		log.info("Member 객체 생성 시작: {}", memberSignUpReqDto.getEmail());
 		// Member 객체 생성
 		Member newMember = new Member(
-			requestDto.getEmail(),
-			requestDto.getMembername(),
+			memberSignUpReqDto.getEmail(),
+			memberSignUpReqDto.getMembername(),
 			encryptedPassword,
-			requestDto.getAddress(),
+			memberSignUpReqDto.getAddress(),
 			userType
 		);
 

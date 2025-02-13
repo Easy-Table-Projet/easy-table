@@ -62,6 +62,7 @@ public class JwtFilter implements Filter {
 			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 				memberId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
 			);
+			// 권한 분리 필요
 			SecurityContextHolder.getContext().setAuthentication(authentication);  // 인증 정보를 SecurityContext에 설정
 			log.info("인증된 사용자 ID: {}", memberId);
 		} else {
