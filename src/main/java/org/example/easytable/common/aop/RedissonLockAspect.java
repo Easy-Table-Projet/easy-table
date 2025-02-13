@@ -26,8 +26,11 @@ public class RedissonLockAspect {
     private final RedissonClient redissonClient;
     private final SpelUtil spelUtil;
 
-    @Value("${spring.data.redis.lock.ttl}")
+    @Value("${spring.data.redis.lock.ttl:2000}")
     private int ttl;
+
+    @Value("${spring.data.redis.lock.wait:3000}")
+    private int waitTime;
 
     @Around(value = "@annotation(redissonLock)", argNames = "redissonLock, joinPoint")
     public Object around(RedissonLock redissonLock, ProceedingJoinPoint joinPoint) throws Throwable {
@@ -40,8 +43,8 @@ public class RedissonLockAspect {
         ) {
             RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(evaluatedKey);
             RLock rLock = redissonLock.readOnly() ? readWriteLock.readLock() : readWriteLock.writeLock();
-            // lock 획득 실패 시 내부적으로 Redis pub/sub 기반의 대기
-            rLock.lock(ttl, TimeUnit.MILLISECONDS);
+            // lock 획득 실패 시 waitTime 만큼 내부적으로 Redis pub/sub 기반의 대기
+            rLock.tryLock(ttl, waitTime, TimeUnit.MILLISECONDS);
 
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
