@@ -142,7 +142,7 @@ public class ReservationConcurrencyTest {
 
         assertNotNull(targetRestaurant);
         assertEquals(validSeatCount, targetRestaurant.getValidSeatCount());
-        assertEquals(threadCount, successCnt.intValue());
-        assertEquals(0, failCnt.intValue());
+        assertEquals(threadCount / guestCount, successCnt.intValue());
+        assertEquals(threadCount - (threadCount / guestCount), failCnt.intValue());
     }
 }

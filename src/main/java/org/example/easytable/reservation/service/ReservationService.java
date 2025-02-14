@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReservationService {
     private final ReservationRepository reservationRepository;
+    private final RestaurantRepository restaurantRepository;
     private final ReservationLockingService lockingService;
 
     @Transactional
@@ -70,6 +71,7 @@ public class ReservationService {
                 reservation.getStatus())).collect(Collectors.toList());
     }
 
+    @RedissonLock(key = "'lock:restaurant:' + #restaurantId")
     @Transactional
     public void deleteReservation(Long restaurantId, Long reservationId) {
         Reservation foundReservation = reservationRepository.findById(reservationId)
@@ -79,6 +81,10 @@ public class ReservationService {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이 예약은 해당 식당에 속하지 않습니다.");
         }
 
-        lockingService.deleteReservationWithLock(restaurantId, foundReservation);
+        Restaurant foundRestaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
+        reservationRepository.delete(foundReservation);
+        foundRestaurant.changeValidSeatCount(foundReservation.getGuestCount());
+        restaurantRepository.save(foundRestaurant);
     }
 }

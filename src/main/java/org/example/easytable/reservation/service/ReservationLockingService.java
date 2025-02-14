@@ -43,13 +43,4 @@ public class ReservationLockingService {
         entityManager.flush();
     }
 
-    @RedissonLock(key = "'lock:restaurant:' + #restaurantId")
-    @Transactional
-    public void deleteReservationWithLock(Long restaurantId, Reservation reservation) {
-        Restaurant foundRestaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
-        reservationRepository.delete(reservation);
-        foundRestaurant.changeValidSeatCount(reservation.getGuestCount());
-        restaurantRepository.save(foundRestaurant);
-    }
 }
