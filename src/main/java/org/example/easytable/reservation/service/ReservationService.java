@@ -40,10 +40,7 @@ public class ReservationService {
 
         reservationRepository.save(createdReservation);
 
-        return new ReservationCreateResDto(
-                createdReservation.getId(), createdReservation.getMember().getId(),
-                createdReservation.getRestaurant().getId(), createdReservation.getReservationTime(),
-                createdReservation.getStatus());
+        return ReservationCreateResDto.from(createdReservation);
     }
 
 
@@ -51,11 +48,7 @@ public class ReservationService {
 
         List<Reservation> reservationList = reservationRepository.findByRestaurantId(restaurantId);
 
-        return reservationList.stream().map(reservation -> new ReservationGetResDto(
-                        reservation.getMember().getId(),
-                        reservation.getRestaurant().getId(),
-                        reservation.getReservationTime(),
-                        reservation.getStatus()))
+        return reservationList.stream().map(ReservationGetResDto::from)
                 .collect(Collectors.toList());
     }
 
@@ -63,20 +56,17 @@ public class ReservationService {
 
         List<Reservation> reservationList = reservationRepository.findByMemberId(memberId);
 
-        return reservationList.stream().map(reservation -> new ReservationGetResDto(
-                reservation.getMember().getId(),
-                reservation.getRestaurant().getId(),
-                reservation.getReservationTime(),
-                reservation.getStatus())).collect(Collectors.toList());
+        return reservationList.stream().map(ReservationGetResDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public void deleteReservation(Long restaurantId, Long reservationId) {
         Reservation foundReservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND,"존재하지 않는 예약입니다"));
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 예약입니다"));
 
         if (!foundReservation.getRestaurant().getId().equals(restaurantId)) {
-            throw CustomException.of(ErrorCode.BAD_REQUEST,"이 예약은 해당 식당에 속하지 않습니다.");
+            throw CustomException.of(ErrorCode.BAD_REQUEST, "이 예약은 해당 식당에 속하지 않습니다.");
         }
         reservationRepository.delete(foundReservation);
     }
