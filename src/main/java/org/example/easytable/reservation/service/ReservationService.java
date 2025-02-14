@@ -5,6 +5,7 @@ import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
+import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -27,23 +28,22 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final RestaurantRepository restaurantRepository;
-    private final RedissonClient redissonClient;
+    private final MemberRepository memberRepository;
 
     @Transactional
-    public ReservationCreateResDto save(Long restaurantId, LocalDateTime reservationTime, int guestCount) {
-
-        Restaurant foundRestaurant = findRestaurantWithLock(restaurantId);
+    public ReservationCreateResDto save(Long restaurantId, LocalDateTime reservationTime, int guestCount, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("유저 조회 실패"));
 
         Reservation createdReservation = Reservation.builder()
-                .member(new Member()) //member 코드 추가시에 member 지정 가능
-                .restaurant(foundRestaurant)
+                .member(member) //member 코드 추가시에 member 지정 가능
                 .reservationTime(reservationTime)
                 .status(ReservationStatus.CONFIRMED)
                 .guestCount(guestCount)
                 .isDeleted(false)
                 .build();
 
-        saveReservationWithLock(foundRestaurant, createdReservation, guestCount);
+        saveReservationWithLock(restaurantId, createdReservation, guestCount);
 
         return new ReservationCreateResDto(
                 createdReservation.getId(), createdReservation.getMember().getId(),
@@ -84,31 +84,32 @@ public class ReservationService {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이 예약은 해당 식당에 속하지 않습니다.");
         }
 
-        Restaurant foundRestaurant = findRestaurantWithLock(restaurantId);
-        deleteReservationWithLock(foundRestaurant, foundReservation);
+        deleteReservationWithLock(restaurantId, foundReservation);
     }
 
-    @RedissonLock(key = "'lock:restaurant:' + #restaurant.getId()", readOnly = true)
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+
     public Restaurant findRestaurantWithLock(Long restaurantId) {
         return restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
     }
 
+
     @RedissonLock(key = "'lock:restaurant:' + #restaurant.getId()")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveReservationWithLock(Restaurant restaurant, Reservation reservation, int guestCount) {
+    private void saveReservationWithLock(Long restaurantId, Reservation reservation, int guestCount) {
+        Restaurant foundRestaurant = findRestaurantWithLock(restaurantId);
+        reservation.setRestaurant(foundRestaurant);
         reservationRepository.save(reservation);
-        restaurant.changeValidSeatCount(-guestCount);
-        restaurantRepository.save(restaurant);
+
+        foundRestaurant.changeValidSeatCount(-guestCount);
+        restaurantRepository.save(foundRestaurant);
     }
 
     @RedissonLock(key = "'lock:restaurant:' + #restaurant.getId()")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void deleteReservationWithLock(Restaurant restaurant, Reservation reservation) {
+    @Transactional
+    public void deleteReservationWithLock(Long restaurantId, Reservation reservation) {
+        Restaurant foundRestaurant = findRestaurantWithLock(restaurantId);
         reservationRepository.delete(reservation);
-        restaurant.changeValidSeatCount(reservation.getGuestCount());
-        restaurantRepository.save(restaurant);
+        foundRestaurant.changeValidSeatCount(reservation.getGuestCount());
+        restaurantRepository.save(foundRestaurant);
     }
-
 }

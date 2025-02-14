@@ -1,5 +1,7 @@
 package org.example.easytable.reservation.service;
 
+import org.example.easytable.member.entity.Member;
+import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.entity.Restaurant;
@@ -28,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ReservationConcurrencyTest {
     private final ReservationService reservationService;
     private final RestaurantRepository restaurantRepository;
+    private final MemberRepository memberRepository;
 
     private Long restaurantId;
     private int validSeatCount;
@@ -36,22 +39,37 @@ public class ReservationConcurrencyTest {
 
     @Autowired
     public ReservationConcurrencyTest(
-        ReservationService reservationService, RestaurantRepository restaurantRepository
+            ReservationService reservationService,
+            RestaurantRepository restaurantRepository,
+            MemberRepository memberRepository
     ) {
         this.reservationService = reservationService;
         this.restaurantRepository = restaurantRepository;
+        this.memberRepository = memberRepository;
     }
 
     @BeforeEach
     @Commit
+    @Transactional
     public void init() {
         restaurantId = 1L;
         validSeatCount = 30;
         threadCount = 30;
         guestCount = 3;
 
-        //restaurantRepository.save(Restaurant.newRestaurant(
-        //        new RestaurantCreateDto("target", "addr1", validSeatCount)));
+//        restaurantRepository.save(Restaurant.newRestaurant(
+//                new RestaurantCreateDto("target", "addr1", validSeatCount, "CHINESE")));
+//
+//        for(int i = 1; i <= threadCount; i++) {
+//            memberRepository.save(Member.builder()
+//                    .email("test" + i + "@mail.com")
+//                    .name("test" + i)
+//                    .password("password" + i)
+//                    .address("addr" + i)
+//                    .isDeleted(false)
+//                    .build()
+//            );
+//        }
     }
 
     @Test
@@ -71,7 +89,7 @@ public class ReservationConcurrencyTest {
             executor.submit(() -> {
                 try {
                     startLatch.await();
-                    reservationService.save(restaurantId, LocalDateTime.now(), guestCount);
+                    reservationService.save(restaurantId, LocalDateTime.now(), guestCount, 1L);
                     successCnt.incrementAndGet();
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
@@ -109,7 +127,7 @@ public class ReservationConcurrencyTest {
                 try {
                     startLatch.await();
                     ReservationCreateResDto currentReservation = reservationService.save(
-                        restaurantId, LocalDateTime.now(), guestCount);
+                        restaurantId, LocalDateTime.now(), guestCount, 1L);
                     reservationService.deleteReservation(restaurantId, currentReservation.getReservationId());
                     successCnt.incrementAndGet();
                 } catch (Exception e) {
