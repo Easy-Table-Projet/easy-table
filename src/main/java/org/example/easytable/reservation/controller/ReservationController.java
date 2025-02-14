@@ -3,10 +3,12 @@ package org.example.easytable.reservation.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.auth.service.AuthService;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.service.ReservationService;
+import org.example.easytable.utils.AuthUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,11 +29,9 @@ public class ReservationController {
     @PostMapping("{restaurantId}/reservation")
     public ResponseEntity<ReservationCreateResDto> save(
             @PathVariable("restaurantId") Long restaurantId,
-            @RequestBody ReservationCreateReqDto requestDto,
-            HttpServletRequest request
+            @RequestBody ReservationCreateReqDto requestDto
     ) {
 
-        // TODO :: httpServletRequest 에서 token 안의 member_id 값 추출하기
         reservationService.save(restaurantId, requestDto.reservationTime());
 
         return new ResponseEntity<>(HttpStatus.CREATED);

@@ -2,11 +2,13 @@ package org.example.easytable.reservation.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
+import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -14,6 +16,7 @@ import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
+import org.example.easytable.utils.AuthUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final RestaurantRepository restaurantRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public ReservationCreateResDto save(Long restaurantId, LocalDateTime reservationTime) {
@@ -30,8 +34,12 @@ public class ReservationService {
         Restaurant foundRestaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
 
+        Long memberId = AuthUtil.getId();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND));
+
         Reservation createdReservation = Reservation.builder()
-                .member(new Member()) //member 코드 추가시에 member 지정 가능
+                .member(member)
                 .restaurant(foundRestaurant)
                 .reservationTime(reservationTime)
                 .status(ReservationStatus.CONFIRMED)
