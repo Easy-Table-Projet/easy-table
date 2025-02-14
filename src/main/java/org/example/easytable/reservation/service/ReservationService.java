@@ -68,7 +68,7 @@ public class ReservationService {
         if (!foundReservation.getRestaurant().getId().equals(restaurantId)) {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이 예약은 해당 식당에 속하지 않습니다.");
         }
-        reservationRepository.delete(foundReservation);
+        foundReservation.deleteReservation();
     }
 
 }

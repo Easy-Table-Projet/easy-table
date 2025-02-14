@@ -35,6 +35,10 @@ public class Reservation extends BaseEntity {
     private ReservationStatus status;
 
     private boolean isDeleted;
+
+    public void deleteReservation() {
+        this.isDeleted = true;
+    }
 }
 
 
