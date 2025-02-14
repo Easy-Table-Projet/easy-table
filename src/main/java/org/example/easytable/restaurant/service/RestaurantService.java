@@ -20,7 +20,12 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
 
     public RestaurantResDto createRestaurant(RestaurantCreateDto dto) {
-        Restaurant restaurant = Restaurant.newRestaurant(dto);
+        Restaurant restaurant = Restaurant.builder()
+                .name(dto.name())
+                .address(dto.address())
+                .validSeatCount(dto.validSeatCount())
+                .restaurantCategory(RestaurantCategory.valueOf(dto.category()))
+                .build();
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
         return RestaurantResDto.from(savedRestaurant);
     }

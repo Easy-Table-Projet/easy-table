@@ -1,25 +1,25 @@
 package org.example.easytable.reservation.dto.response;
 
 import java.time.LocalDateTime;
-import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 
-@Builder
-public record ReservationGetResDto(
-        Long memberId,
-        Long restaurantId,
-        LocalDateTime reservationTime,
-        ReservationStatus status
-) {
+@Getter
+@RequiredArgsConstructor(staticName = "from")
+public class ReservationGetResDto {
+    private final Long memberId;
+    private final Long restaurantId;
+    private final LocalDateTime reservationTime;
+    private final ReservationStatus status;
 
-    public static ReservationGetResDto from(Reservation reservation){
-        return ReservationGetResDto.builder()
-                .memberId(reservation.getMember().getId())
-                .restaurantId(reservation.getRestaurant().getId())
-                .reservationTime(reservation.getReservationTime())
-                .status(reservation.getStatus())
-                .build();
+    public static ReservationGetResDto from(Reservation reservation) {
+        return from(
+                reservation.getMember().getId(),
+                reservation.getRestaurant().getId(),
+                reservation.getReservationTime(),
+                reservation.getStatus());
     }
 }
 

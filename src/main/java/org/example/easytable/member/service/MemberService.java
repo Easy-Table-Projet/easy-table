@@ -17,7 +17,7 @@ public class MemberService {
 	private final PasswordEncoder passwordEncoder;
 
 
-	public void deleteUser(Integer userId) {
+	public void deleteUser(Long userId) {
 		Member user = memberRepository.findById(userId)
 				.orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다. ID: " + userId));
 

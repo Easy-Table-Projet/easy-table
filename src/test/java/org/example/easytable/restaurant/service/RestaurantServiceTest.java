@@ -39,8 +39,13 @@ public class RestaurantServiceTest {
 
     @BeforeEach
     void setUp() {
-        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소","KOREAN");
-        restaurant = Restaurant.newRestaurant(restaurantCreateDto);
+        restaurantCreateDto = new RestaurantCreateDto("가게이름", "가게주소",10, "KOREAN");
+        restaurant = Restaurant.builder()
+                .name(restaurantCreateDto.name())
+                .address(restaurantCreateDto.address())
+                .validSeatCount(restaurantCreateDto.validSeatCount())
+                .restaurantCategory(RestaurantCategory.valueOf(restaurantCreateDto.category()))
+                .build();
         ReflectionTestUtils.setField(restaurant, "id", 1L);
     }
 

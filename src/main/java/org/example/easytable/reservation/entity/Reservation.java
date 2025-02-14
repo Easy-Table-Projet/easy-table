@@ -1,7 +1,6 @@
 package org.example.easytable.reservation.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +13,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Reservation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,11 +29,19 @@ public class Reservation extends BaseEntity {
     private LocalDateTime reservationTime;
 
     @Enumerated(EnumType.STRING)
-    private ReservationStatus status;
+    private ReservationStatus status = ReservationStatus.PENDING; // 기본값 설정
 
-    private boolean isDeleted;
+    private boolean isDeleted = false; // 기본값 설정
 
-    public void deleteReservation() {
+    @Builder
+    public Reservation(Member member, Restaurant restaurant, LocalDateTime reservationTime) {
+        this.member = member;
+        this.restaurant = restaurant;
+        this.reservationTime = reservationTime;
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void softDelete() {
         this.isDeleted = true;
     }
 }
