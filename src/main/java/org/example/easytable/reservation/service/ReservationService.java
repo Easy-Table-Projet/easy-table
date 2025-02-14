@@ -31,15 +31,15 @@ public class ReservationService {
 
         Long memberId = AuthUtil.getId();
 
-        Member foundMember = memberRepository.findById(memberId)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
-        Restaurant foundRestaurant = restaurantRepository.findById(restaurantId)
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
 
         Reservation newReservation = Reservation.builder()
-                .member(foundMember)
-                .restaurant(foundRestaurant)
+                .member(member)
+                .restaurant(restaurant)
                 .reservationTime(reservationCreateReqDto.reservationTime())
                 .build();
 
@@ -50,10 +50,11 @@ public class ReservationService {
 
 
     public List<ReservationGetResDto> getReservationByRestaurant(Long restaurantId) {
-//        if (reservationList.isEmpty()) {
-//            throw CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다");
-//        }
-//
+
+        if (!restaurantRepository.existsById(restaurantId)) {
+            throw CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다");
+        }
+
         List<Reservation> reservationList = reservationRepository.findByRestaurantId(restaurantId);
 
         // TODO: N+1 개선 필요 - Member, Restaurant 조회 시 발생
@@ -75,14 +76,14 @@ public class ReservationService {
     public void deleteReservation(Long reservationId) {
         Long memberId = AuthUtil.getId();
 
-        Reservation foundReservation = reservationRepository.findById(reservationId)
+        Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 예약입니다"));
 
-        if (!foundReservation.getMember().getId().equals(memberId)) {
+        if (!reservation.getMember().getId().equals(memberId)) {
             throw CustomException.of(ErrorCode.FORBIDDEN, "본인의 예약만 취소할 수 있습니다");
         }
 
-        foundReservation.softDelete();
+        reservation.softDelete();
     }
 
 }

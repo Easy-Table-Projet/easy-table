@@ -24,7 +24,7 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping("/{restaurantId}")
-    public ResponseEntity<ReservationCreateResDto> save(
+    public ResponseEntity<ReservationCreateResDto> createReservation(
             @PathVariable Long restaurantId,
             @RequestBody ReservationCreateReqDto requestDto
     ) {
