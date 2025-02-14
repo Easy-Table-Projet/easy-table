@@ -1,6 +1,5 @@
 package org.example.easytable.reservation.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
@@ -18,26 +17,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/restaurants")
+@RequestMapping("/api/reservations")
 @RequiredArgsConstructor
 public class ReservationController {
 
     private final ReservationService reservationService;
 
-    @PostMapping("{restaurantId}/reservation")
+    @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> save(
-            @PathVariable("restaurantId") Long restaurantId,
-            @RequestBody ReservationCreateReqDto requestDto,
-            HttpServletRequest request
+            @PathVariable Long restaurantId,
+            @RequestBody ReservationCreateReqDto requestDto
     ) {
 
-        // TODO :: httpServletRequest 에서 token 안의 member_id 값 추출하기
-        reservationService.save(restaurantId, requestDto.getReservationTime());
+        reservationService.createReservation(restaurantId, requestDto);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping("/{restaurantId}/reservation")
+    @GetMapping("/{restaurantId}")
     public ResponseEntity<List<ReservationGetResDto>> getReservation(
             @PathVariable("restaurantId") Long restaurantId
     ) {
@@ -48,23 +45,19 @@ public class ReservationController {
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }
 
-    @GetMapping("/{memberId}/reservation")
-    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember(
-            @PathVariable("memberId") Long memberId
-    ) {
-        List<ReservationGetResDto> reservation = reservationService.getReservationByMember(
-                memberId);
+    @GetMapping("/")
+    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember() {
+        List<ReservationGetResDto> reservation = reservationService.getReservationByMember();
 
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{restaurantId}/reservation/{reservationId}")
+    @DeleteMapping("/{reservationId}")
     public void deleteReservation(
-            @PathVariable("restaurantId") Long restaurantId,
             @PathVariable("reservationId") Long reservationId
     ) {
 
-        reservationService.deleteReservation(restaurantId, reservationId);
+        reservationService.deleteReservation(reservationId);
 
     }
 }

@@ -15,7 +15,6 @@ import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Restaurant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +29,7 @@ public class Restaurant extends BaseEntity {
     @Column(nullable = false)
     private int validSeatCount;
 
-    private boolean isDeleted;
+    private boolean isDeleted = false;
 
     @Enumerated(EnumType.STRING)
     private RestaurantCategory restaurantCategory;
@@ -38,14 +37,12 @@ public class Restaurant extends BaseEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
-    public static Restaurant newRestaurant(RestaurantCreateDto req) {
-        return Restaurant.builder()
-                .name(req.name())
-                .address(req.address())
-                .validSeatCount(req.validSeatCount())
-                .restaurantCategory(RestaurantCategory.valueOf(req.category()))
-                .isDeleted(false)
-                .build();
+    @Builder
+    public Restaurant(String name, String address, int validSeatCount, RestaurantCategory restaurantCategory) {
+        this.name = name;
+        this.address = address;
+        this.validSeatCount = validSeatCount;
+        this.restaurantCategory = restaurantCategory;
     }
 
     public void updateRestaurantName(String name) {
