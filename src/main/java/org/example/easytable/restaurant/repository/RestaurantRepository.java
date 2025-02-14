@@ -9,15 +9,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
-    @Query("""
-            SELECT r
-            FROM Restaurant r
-            WHERE (:restaurantName IS NULL OR r.name LIKE %:restaurantName%)
-            AND (:category IS NULL OR r.restaurantCategory = :category)
-            AND r.isDeleted IS FALSE 
-            """)
+    @Query(value = """
+        SELECT * FROM restaurant r
+        WHERE (:restaurantName IS NULL OR MATCH(r.name) AGAINST(:restaurantName IN NATURAL LANGUAGE MODE))
+        AND (:category IS NULL OR r.restaurant_category = :category)
+        AND r.is_deleted = FALSE
+        """, nativeQuery = true)
     Page<Restaurant> findAllRestaurantByTitleAndCategory(
             @Param("restaurantName") String restaurantName,
             @Param("category") RestaurantCategory enumCategory,
@@ -30,7 +30,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     GROUP BY r.id, r.address, r.createdAt, r.isDeleted, r.name, r.restaurantCategory, r.updatedAt
     ORDER BY COUNT(res.id) DESC
 """)
-    Page<Restaurant> findTop100RestaurantList(
-            @Param("oneMonthAgo") LocalDateTime oneMonthAgo,
-            Pageable pageable);
+    List<Restaurant> findTop100RestaurantList(
+            @Param("oneMonthAgo") LocalDateTime oneMonthAgo);
 }

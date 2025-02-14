@@ -1,7 +1,6 @@
 package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.common.dto.PageResponse;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
@@ -17,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,10 +60,12 @@ public class RestaurantService {
     }
     @Cacheable(value = CACHE_KEY)
     @Transactional(readOnly = true)
-    public PageResponse<RestaurantResDto> findTop100RestaurantList(Pageable pageable) {
+    public List<RestaurantResDto> findTop100RestaurantList() {
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        Page<Restaurant> restaurants = restaurantRepository.findTop100RestaurantList(oneMonthAgo, pageable);
-        return new PageResponse<>(restaurants.map(RestaurantResDto::from));
+        List<Restaurant> restaurants = restaurantRepository.findTop100RestaurantList(oneMonthAgo);
+        return restaurants.stream()
+                .map(RestaurantResDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

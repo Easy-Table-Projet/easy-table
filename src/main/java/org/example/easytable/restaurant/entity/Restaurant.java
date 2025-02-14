@@ -16,6 +16,11 @@ import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "restaurant",
+        indexes = {
+                @Index(name = "idx_restaurant_category", columnList = "restaurantCategory"),
+                @Index(name = "idx_is_deleted", columnList = "isDeleted")
+        })
 public class Restaurant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

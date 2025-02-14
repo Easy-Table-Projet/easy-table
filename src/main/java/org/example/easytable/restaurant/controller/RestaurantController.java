@@ -1,7 +1,6 @@
 package org.example.easytable.restaurant.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.common.dto.PageResponse;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
@@ -12,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 @RestController
 @RequestMapping("/api/restaurant")
 @RequiredArgsConstructor
@@ -41,10 +41,9 @@ public class RestaurantController {
                 pageable));
     }
 
-    @GetMapping("/top100")
-    public ResponseEntity<PageResponse<RestaurantResDto>> findTop100RestaurantList(
-            Pageable pageable) {
-        return ResponseEntity.ok(restaurantService.findTop100RestaurantList(pageable));
+    @GetMapping("/top-100")
+    public ResponseEntity<List<RestaurantResDto>> findTop100RestaurantList() {
+        return ResponseEntity.ok(restaurantService.findTop100RestaurantList());
     }
 
     @PatchMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
