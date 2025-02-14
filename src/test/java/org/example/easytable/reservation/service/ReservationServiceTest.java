@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.example.easytable.member.entity.Member;
+import org.example.easytable.member.entity.MemberType;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -73,13 +74,10 @@ class ReservationServiceTest {
 
         // given
         Member member = Member.builder()
-                .id(1L)
                 .email("teste@naver.com")
                 .name("name")
                 .password("password")
-                .address("address")
-                .isDeleted(false)
-                .reservations(null)
+                .memberType(MemberType.USER)
                 .build();
 
         Long restaurantId = 1L;

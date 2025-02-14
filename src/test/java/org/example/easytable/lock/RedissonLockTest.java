@@ -1,6 +1,6 @@
 package org.example.easytable.lock;
 
-import org.example.easytable.util.DummyCounter;
+import org.example.easytable.common.utils.DummyCounter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

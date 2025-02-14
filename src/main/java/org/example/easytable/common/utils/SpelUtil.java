@@ -1,4 +1,4 @@
-package org.example.easytable.config;
+package org.example.easytable.common.utils;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;

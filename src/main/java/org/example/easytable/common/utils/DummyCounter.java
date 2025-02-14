@@ -1,4 +1,4 @@
-package org.example.easytable.util;
+package org.example.easytable.common.utils;
 
 import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.springframework.stereotype.Component;
@@ -15,12 +15,6 @@ public class DummyCounter {
     public void incrementCounter() {
         int currentValue = counter.get();
         System.out.println("current Counter value: " + currentValue);
-        try {
-            // 지연 시간을 주어 lock이 유지되고 있는 동안 다른 스레드들이 대기하도록 함
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         counter.set(currentValue + 1);
     }
 

@@ -1,9 +1,6 @@
 package org.example.easytable.reservation.service;
 
-import org.example.easytable.member.entity.Member;
-import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
-import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ReservationConcurrencyTest {
     private final ReservationService reservationService;
     private final RestaurantRepository restaurantRepository;
-    private final MemberRepository memberRepository;
 
     private Long restaurantId;
     private int validSeatCount;
@@ -40,12 +35,10 @@ public class ReservationConcurrencyTest {
     @Autowired
     public ReservationConcurrencyTest(
             ReservationService reservationService,
-            RestaurantRepository restaurantRepository,
-            MemberRepository memberRepository
+            RestaurantRepository restaurantRepository
     ) {
         this.reservationService = reservationService;
         this.restaurantRepository = restaurantRepository;
-        this.memberRepository = memberRepository;
     }
 
     @BeforeEach
@@ -73,8 +66,6 @@ public class ReservationConcurrencyTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void checkReservationSaveConcurrency() throws InterruptedException {
         // given
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -111,8 +102,6 @@ public class ReservationConcurrencyTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void checkReservationDeleteConcurrency() throws InterruptedException {
         // given
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
