@@ -1,8 +1,9 @@
 package org.example.easytable.reservation.dto.request;
 
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Getter
 @RequiredArgsConstructor

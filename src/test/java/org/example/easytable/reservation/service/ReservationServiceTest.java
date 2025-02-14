@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.example.easytable.member.entity.Member;
-import org.example.easytable.member.entity.Member.MemberBuilder;
+import org.example.easytable.member.entity.MemberType;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -43,8 +43,10 @@ class ReservationServiceTest {
         // given
         Long restaurantId = 1L;
         LocalDateTime reservationTime = LocalDateTime.now();
+        int orderCount = 1;
+        int validSeatCount = 20;
         Restaurant restaurant
-                = new Restaurant(restaurantId, "restaurant", "address", false, RestaurantCategory.KOREAN ,null);
+                = new Restaurant(restaurantId, "restaurant", "address", validSeatCount, false, RestaurantCategory.KOREAN ,null);
 
         Reservation reservation = Reservation.builder()
                 .member(null)
@@ -59,7 +61,7 @@ class ReservationServiceTest {
 
         // when
         ReservationCreateResDto savedReservation = reservationService.save(restaurantId,
-                reservationTime);
+                reservationTime, orderCount, 1L);
 
         // then
         verify(restaurantRepository, times(1)).findById(restaurantId);
@@ -72,13 +74,10 @@ class ReservationServiceTest {
 
         // given
         Member member = Member.builder()
-                .id(1L)
                 .email("teste@naver.com")
                 .name("name")
                 .password("password")
-                .address("address")
-                .isDeleted(false)
-                .reservations(null)
+                .memberType(MemberType.USER)
                 .build();
 
         Long restaurantId = 1L;

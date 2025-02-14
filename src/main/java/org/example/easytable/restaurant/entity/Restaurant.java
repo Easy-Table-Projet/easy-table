@@ -1,8 +1,6 @@
 package org.example.easytable.restaurant.entity;
 
 import jakarta.persistence.*;
-
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.example.easytable.common.entity.BaseEntity;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
+
+import java.util.List;
 
 @Entity
 @Getter
