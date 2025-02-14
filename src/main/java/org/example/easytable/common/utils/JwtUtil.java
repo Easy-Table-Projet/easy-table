@@ -1,4 +1,4 @@
-package org.example.easytable.utils;
+package org.example.easytable.common.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
