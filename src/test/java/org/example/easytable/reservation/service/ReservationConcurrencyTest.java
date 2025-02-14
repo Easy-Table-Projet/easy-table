@@ -97,8 +97,12 @@ public class ReservationConcurrencyTest {
         executor.shutdown();
 
         // then
-        assertEquals(validSeatCount / guestCount, successCnt.intValue());
-        assertEquals(validSeatCount - (validSeatCount / guestCount), failCnt.intValue());
+        Restaurant targetRestaurant = restaurantRepository.findById(restaurantId).orElse(null);
+
+        assertNotNull(targetRestaurant);
+        assertEquals(validSeatCount % guestCount, targetRestaurant.getValidSeatCount());
+        assertEquals(threadCount / guestCount, successCnt.intValue());
+        assertEquals(threadCount - (threadCount / guestCount), failCnt.intValue());
     }
 
     @Test

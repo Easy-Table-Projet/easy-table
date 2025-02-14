@@ -60,8 +60,7 @@ public class RedissonLockAspect {
 
         try {
             // lock 획득 실패 시 waitTime 만큼 내부적으로 Redis pub/sub 기반의 대기
-            if (rLock.tryLock(ttl, waitTime, TimeUnit.MILLISECONDS)) {
-                Thread.sleep(100);
+            if (rLock.tryLock(waitTime, ttl, TimeUnit.MILLISECONDS)) {
                 // 서비스 로직 수행
                 return joinPoint.proceed();
             }

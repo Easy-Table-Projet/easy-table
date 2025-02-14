@@ -24,28 +24,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class ReservationService {
-
     private final ReservationRepository reservationRepository;
-    private final RestaurantRepository restaurantRepository;
-    private final MemberRepository memberRepository;
+    private final ReservationLockingService lockingService;
 
     @Transactional
     public ReservationCreateResDto save(Long restaurantId, LocalDateTime reservationTime, int guestCount, Long memberId) {
-        Member member = memberRepository.findById(memberId.intValue())
-                .orElseThrow(() -> new RuntimeException("유저 조회 실패"));
-
         Reservation createdReservation = Reservation.builder()
-                .member(member) //member 코드 추가시에 member 지정 가능
                 .reservationTime(reservationTime)
                 .status(ReservationStatus.CONFIRMED)
                 .guestCount(guestCount)
                 .isDeleted(false)
                 .build();
 
-        saveReservationWithLock(restaurantId, createdReservation, guestCount);
+        lockingService.saveReservationWithLock(restaurantId, memberId, createdReservation, guestCount);
 
         return new ReservationCreateResDto(
                 createdReservation.getId(), createdReservation.getMember().getId(),
@@ -86,33 +79,6 @@ public class ReservationService {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이 예약은 해당 식당에 속하지 않습니다.");
         }
 
-        deleteReservationWithLock(restaurantId, foundReservation);
-    }
-
-
-    public Restaurant findRestaurantById(Long restaurantId) {
-        return restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
-    }
-
-
-    @RedissonLock(key = "'lock:restaurant:' + #restaurantId")
-    @Transactional
-    public void saveReservationWithLock(Long restaurantId, Reservation reservation, int guestCount) {
-        Restaurant foundRestaurant = findRestaurantById(restaurantId);
-        reservation.setRestaurant(foundRestaurant);
-        reservationRepository.save(reservation);
-
-        foundRestaurant.changeValidSeatCount(-guestCount);
-        restaurantRepository.save(foundRestaurant);
-    }
-
-    @RedissonLock(key = "'lock:restaurant:' + #restaurantId")
-    @Transactional
-    public void deleteReservationWithLock(Long restaurantId, Reservation reservation) {
-        Restaurant foundRestaurant = findRestaurantById(restaurantId);
-        reservationRepository.delete(reservation);
-        foundRestaurant.changeValidSeatCount(reservation.getGuestCount());
-        restaurantRepository.save(foundRestaurant);
+        lockingService.deleteReservationWithLock(restaurantId, foundReservation);
     }
 }
