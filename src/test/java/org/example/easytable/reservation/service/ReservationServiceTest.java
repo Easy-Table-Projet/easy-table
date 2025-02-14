@@ -84,7 +84,7 @@ class ReservationServiceTest {
         Restaurant restaurant = Restaurant.builder()
                 .name("Nice Restaurant")  // 레스토랑 이름 설정
                 .address("123 Food Street")  // 주소 설정
-                .restaurantCategory(RestaurantCategory.KOREAN)  // 레스토랑 카테고리 설정
+                .category(RestaurantCategory.KOREAN)  // 레스토랑 카테고리 설정
                 .build();
 
         // 예약(Reservation) 객체 생성
@@ -142,7 +142,7 @@ class ReservationServiceTest {
         Restaurant restaurant = Restaurant.builder()
                 .name("Nice Restaurant")
                 .address("123 Food Street")
-                .restaurantCategory(RestaurantCategory.KOREAN)
+                .category(RestaurantCategory.KOREAN)
                 .build();
 
         List<Reservation> reservations = Arrays.asList(
