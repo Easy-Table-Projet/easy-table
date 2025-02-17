@@ -2,6 +2,7 @@ package org.example.easytable.reservation.controller;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
@@ -24,12 +25,13 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping("/{restaurantId}")
-    public ResponseEntity<ReservationCreateResDto> save(
+    public ResponseEntity<ReservationCreateResDto> createReservation(
             @PathVariable Long restaurantId,
             @RequestBody ReservationCreateReqDto requestDto
     ) {
+        Long memberId = AuthUtil.getId();
 
-        reservationService.createReservation(restaurantId, requestDto);
+        reservationService.createReservation(restaurantId, memberId, requestDto);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

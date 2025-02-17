@@ -1,5 +1,8 @@
 package org.example.easytable.restaurant.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum RestaurantCategory {
     KOREAN("한식"),
     CHINESE("중식"),
@@ -19,9 +22,5 @@ public enum RestaurantCategory {
 
     RestaurantCategory(String koreanName) {
         this.koreanName = koreanName;
-    }
-
-    public String getKoreanName() {
-        return koreanName;
     }
 }

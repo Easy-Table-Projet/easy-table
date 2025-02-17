@@ -1,4 +1,4 @@
-package org.example.easytable.utils;
+package org.example.easytable.common.utils;
 
 import lombok.experimental.UtilityClass;
 import org.example.easytable.security.UserDetailsImpl;
