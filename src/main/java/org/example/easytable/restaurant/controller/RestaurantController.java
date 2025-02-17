@@ -1,7 +1,7 @@
 package org.example.easytable.restaurant.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
+import org.example.easytable.restaurant.dto.request.RestaurantCreateReqDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.service.RestaurantService;
@@ -12,44 +12,44 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/restaurant")
+@RequestMapping("/api/restaurants")
 @RequiredArgsConstructor
 public class RestaurantController {
     private final RestaurantService restaurantService;
 
     @PostMapping//todo: 관리자 권한 설정 필요
     public ResponseEntity<RestaurantResDto> createRestaurant(
-            @RequestBody RestaurantCreateDto dto) {
+            @RequestBody RestaurantCreateReqDto restaurantCreateReqDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(restaurantService.createRestaurant(dto));
+                .body(restaurantService.createRestaurant(restaurantCreateReqDto));
     }
 
     @GetMapping("/{restaurantId}")
-    public ResponseEntity<RestaurantResDto> findRestaurantById(
+    public ResponseEntity<RestaurantResDto> getRestaurantById(
             @PathVariable Long restaurantId) {
-        return ResponseEntity.ok(restaurantService.findRestaurantById(restaurantId));
+        return ResponseEntity.ok(restaurantService.getRestaurantById(restaurantId));
     }
 
     @GetMapping
-    public ResponseEntity<Page<RestaurantResDto>> findAllRestaurantByTitleAndCategory(
-            @RequestParam(required = false) String restaurantName,
+    public ResponseEntity<Page<RestaurantResDto>> getAllRestaurantByTitleAndCategory(
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) String category,
             Pageable pageable) {
-        return ResponseEntity.ok(restaurantService.findAllRestaurantByTitleAndCategory(restaurantName,category, pageable));
+        return ResponseEntity.ok(restaurantService.getAllRestaurantByTitleAndCategory(name, category, pageable));
     }
 
-    @PatchMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
+    @PatchMapping("/{restaurantId}")
     public ResponseEntity<RestaurantResDto> updateRestaurantName(
             @PathVariable Long restaurantId,
-            @RequestBody RestaurantNameUpdateReqDto dto) {
-        return ResponseEntity.ok(restaurantService.updateRestaurantName(restaurantId, dto));
+            @RequestBody RestaurantNameUpdateReqDto restaurantNameUpdateReqDto) {
+        return ResponseEntity.ok(restaurantService.updateRestaurantName(restaurantId, restaurantNameUpdateReqDto));
     }
 
-    @DeleteMapping("/{restaurantId}")//todo: 관리자 권한 설정 필요
-    public ResponseEntity<Void> deleteRestaurantName(
+    @DeleteMapping("/{restaurantId}")
+    public ResponseEntity<Void> deleteRestaurant(
             @PathVariable Long restaurantId) {
-        restaurantService.deleteRestaurantName(restaurantId);
+        restaurantService.deleteRestaurant(restaurantId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
