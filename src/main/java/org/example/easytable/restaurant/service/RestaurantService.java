@@ -1,6 +1,7 @@
 package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
@@ -11,7 +12,6 @@ import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
-import org.example.easytable.utils.AuthUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +23,8 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final MemberRepository memberRepository;
 
+
+    @Transactional
     public RestaurantResDto createRestaurant(RestaurantCreateReqDto restaurantCreateReqDto) {
         Long memberId = AuthUtil.getId();
 

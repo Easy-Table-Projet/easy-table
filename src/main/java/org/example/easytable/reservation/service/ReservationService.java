@@ -3,6 +3,9 @@ package org.example.easytable.reservation.service;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.aop.annotation.LockKey;
+import org.example.easytable.common.aop.annotation.RedissonLock;
+import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
@@ -14,7 +17,6 @@ import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
-import org.example.easytable.utils.AuthUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +28,19 @@ public class ReservationService {
     private final RestaurantRepository restaurantRepository;
     private final MemberRepository memberRepository;
 
+    @RedissonLock(prefix = "restaurant:")
     @Transactional
-    public ReservationCreateResDto createReservation(Long restaurantId, ReservationCreateReqDto reservationCreateReqDto) {
+    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationCreateReqDto reservationCreateReqDto) {
 
-        Long memberId = AuthUtil.getId();
+        System.out.println("Creating reservation with memberId: " + memberId);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
+
+        restaurant.decreaseRemainingTableCount();
 
         Reservation newReservation = Reservation.builder()
                 .member(member)

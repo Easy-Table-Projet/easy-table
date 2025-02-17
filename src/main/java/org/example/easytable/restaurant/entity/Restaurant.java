@@ -67,7 +67,7 @@ public class Restaurant extends BaseEntity {
         this.name = name;
     }
 
-    public void decreaseTableCount() {
+    public void decreaseRemainingTableCount() {
         if (this.remainingTableCount <= 0) {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "사용 가능한 테이블 수가 부족합니다.");
         }

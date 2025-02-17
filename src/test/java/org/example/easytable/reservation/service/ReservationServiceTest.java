@@ -5,21 +5,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
+
+import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
-import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
-import org.example.easytable.utils.AuthUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -107,7 +105,7 @@ class ReservationServiceTest {
 
         // when (실제 테스트 실행)
         // 예약 서비스를 호출하여 예약을 생성하고, 결과를 savedReservation에 저장
-        ReservationCreateResDto savedReservation = reservationService.createReservation(restaurantId, reservationCreateReqDto);
+        ReservationCreateResDto savedReservation = reservationService.createReservation(restaurantId, member.getId(), reservationCreateReqDto);
 
         // then (검증 단계)
         // memberRepository.findById(1L) 메서드가 1번 호출되었는지 검증
