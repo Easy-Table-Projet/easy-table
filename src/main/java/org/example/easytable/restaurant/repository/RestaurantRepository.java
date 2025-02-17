@@ -13,7 +13,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             SELECT r
             FROM Restaurant r
             WHERE (:restaurantName IS NULL OR r.name LIKE %:restaurantName%)
-            AND (:category IS NULL OR r.category = :category)
+            AND (:category IS NULL OR r.restaurantCategory = :category)
             AND r.isDeleted IS FALSE 
             """)
     Page<Restaurant> findAllRestaurantByTitleAndCategory(

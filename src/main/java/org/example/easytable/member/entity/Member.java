@@ -30,7 +30,7 @@ public class Member extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private MemberType memberType = MemberType.NONE;
+	private MemberType memberType;
 
 	@Column(nullable = false)
 	private boolean isDeleted = false;
@@ -40,7 +40,7 @@ public class Member extends BaseEntity {
 		this.name = name;
 		this.email = email;
 		this.password = password;
-		this.memberType = memberType;
+		this.memberType = memberType != null ? memberType : MemberType.USER;
 	}
 
 	public void updatePassword(String encodedPassword) {

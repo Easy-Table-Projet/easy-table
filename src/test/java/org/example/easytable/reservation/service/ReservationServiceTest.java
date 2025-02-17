@@ -2,15 +2,16 @@ package org.example.easytable.reservation.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.example.easytable.member.entity.Member;
-import org.example.easytable.member.repository.MemberRepository;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.member.entity.MemberType;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -19,15 +20,10 @@ import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
-import org.example.easytable.utils.AuthUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,125 +38,103 @@ class ReservationServiceTest {
     @Mock
     private RestaurantRepository restaurantRepository;
 
-    @Mock
-    private MemberRepository memberRepository;
+    @Test
+    public void 예약_등록_성공() throws Exception {
+        // given
+        Long restaurantId = 1L;
+        LocalDateTime reservationTime = LocalDateTime.now();
+        int orderCount = 1;
+        int validSeatCount = 20;
+        Restaurant restaurant
+                = new Restaurant(restaurantId, "restaurant", "address", validSeatCount, false, RestaurantCategory.KOREAN ,null);
 
-    // AuthUtil의 정적 메서드를 Mocking하기 위한 객체
-    // MockedStatic은 정적 메서드를 모의(Mock)하여 원하는 값을 반환하도록 설정하는 데 사용됨
-    private MockedStatic<AuthUtil> authUtil;
-    private static final Long MEMBER_ID = 1L;
+        Reservation reservation = Reservation.builder()
+                .member(null)
+                .restaurant(restaurant)
+                .reservationTime(reservationTime)
+                .status(ReservationStatus.CONFIRMED)
+                .isDeleted(false)
+                .build();
 
-    @BeforeEach
-    void setUp() {
-        // AuthUtil 클래스를 Mocking하여 정적 메서드 getId()가 항상 1L을 반환하도록 설정
-        authUtil = mockStatic(AuthUtil.class);
-        authUtil.when(AuthUtil::getId).thenReturn(MEMBER_ID);
-    }
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
 
-    @AfterEach
-    void tearDown() {
-        // MockedStatic 인스턴스를 닫아 Mock을 해제 (테스트 간 간섭 방지)
-        authUtil.close();
+        // when
+        ReservationCreateResDto savedReservation = reservationService.save(restaurantId,
+                reservationTime, orderCount, 1L);
+
+        // then
+        verify(restaurantRepository, times(1)).findById(restaurantId);
+        verify(reservationRepository, times(1)).save(any(Reservation.class));
+        assertEquals(reservation.getRestaurant().getId(), savedReservation.getRestaurantId());
     }
 
     @Test
-    @DisplayName("예약 등록 성공 테스트")
-    void testCreateReservationSuccess() {
-        // given (테스트 준비)
-        // 예약 시간을 2024년 2월 14일 오전 10시로 설정
-        LocalDateTime reservationTime = LocalDateTime.of(2024, 2, 14, 10, 0);
+    public void 식당에_등록된_예약_조회() throws Exception {
 
-        // 예약 요청 DTO(데이터 전송 객체) 생성
-        ReservationCreateReqDto reservationCreateReqDto = new ReservationCreateReqDto(reservationTime);
-
-        // 회원(Member) 객체 생성 (빌더 패턴 사용)
+        // given
         Member member = Member.builder()
-                .name("John Doe")  // 회원 이름 설정
-                .email("john@example.com")  // 회원 이메일 설정
+                .email("teste@naver.com")
+                .name("name")
+                .password("password")
+                .memberType(MemberType.USER)
                 .build();
 
         Long restaurantId = 1L;
-        // 레스토랑(Restaurant) 객체 생성
+        LocalDateTime reservationTime = LocalDateTime.now();
+
         Restaurant restaurant = Restaurant.builder()
-                .name("Nice Restaurant")  // 레스토랑 이름 설정
-                .address("123 Food Street")  // 주소 설정
-                .category(RestaurantCategory.KOREAN)  // 레스토랑 카테고리 설정
-                .build();
+                .id(restaurantId)
+                .name("name")
+                .address("주소")
+                .isDeleted(false)
+                .reservations(null).build();
 
-        // 예약(Reservation) 객체 생성
         Reservation reservation = Reservation.builder()
-                .member(member)  // 예약한 회원 설정
-                .restaurant(restaurant)  // 예약한 레스토랑 설정
-                .reservationTime(reservationTime)  // 예약 시간 설정
+                .member(member)
+                .restaurant(restaurant)
+                .reservationTime(reservationTime)
+                .status(ReservationStatus.CONFIRMED)
+                .isDeleted(false)
                 .build();
 
-
-        // Mocking (가짜 객체 설정)
-        // memberRepository에서 ID가 MEMBER_ID인 회원을 조회하면 위에서 만든 member 객체를 반환하도록 설정
-        when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-
-        // restaurantRepository에서 ID가 1인 레스토랑을 조회하면 위에서 만든 restaurant 객체를 반환하도록 설정
-        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-
-        // reservationRepository에서 예약을 저장할 때, 위에서 만든 reservation 객체를 반환하도록 설정
-        when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
-
-        // when (실제 테스트 실행)
-        // 예약 서비스를 호출하여 예약을 생성하고, 결과를 savedReservation에 저장
-        ReservationCreateResDto savedReservation = reservationService.createReservation(restaurantId, reservationCreateReqDto);
-
-        // then (검증 단계)
-        // memberRepository.findById(1L) 메서드가 1번 호출되었는지 검증
-        verify(memberRepository, times(1)).findById(MEMBER_ID);
-
-        // restaurantRepository.findById(1L) 메서드가 1번 호출되었는지 검증
-        verify(restaurantRepository, times(1)).findById(restaurantId);
-
-        // reservationRepository.save() 메서드가 1번 호출되었는지 검증
-        verify(reservationRepository, times(1)).save(any(Reservation.class));
-
-        // 반환된 예약 정보가 예상한 예약 시간과 일치하는지 검증
-        assertEquals(reservationTime, savedReservation.reservationTime());
-
-        // 반환된 예약 상태가 CONFIRMED인지 검증
-        assertEquals(ReservationStatus.CONFIRMED, savedReservation.status());
+        when(reservationRepository.findByRestaurantId(restaurantId)).thenReturn(Arrays.asList(reservation));
+        // when
+        List<ReservationGetResDto> reservationList = reservationService.getReservationByRestaurant(restaurantId);
+        // then
+        assertEquals(1,reservationList.size());
+        assertEquals(member.getId(), reservationList.get(0).getMemberId());
+        assertEquals(restaurant.getId(), reservationList.get(0).getRestaurantId());
+        assertEquals(reservationTime, reservationList.get(0).getReservationTime());
+        assertEquals(ReservationStatus.CONFIRMED, reservationList.get(0).getStatus());
     }
 
+    @Test
+    public void 예약_삭제_성공() throws Exception {
+        // given
+        Long restaurantId = 1L;
+        Long reservationId = 1L; // 테스트용 예약 ID
 
-//    @Test
-//    @DisplayName("레스토랑 ID로 예약 목록 조회 성공 테스트")
-//    void testGetReservationByRestaurantSuccess() {
-//        // given
-//        LocalDateTime reservationTime = LocalDateTime.of(2024, 2, 14, 10, 0);
-//
-//        Member member = Member.builder()
-//                .name("John Doe")
-//                .email("john@example.com")
-//                .build();
-//
-//        Restaurant restaurant = Restaurant.builder()
-//                .name("Nice Restaurant")
-//                .address("123 Food Street")
-//                .restaurantCategory(RestaurantCategory.KOREAN)
-//                .build();
-//
-//        List<Reservation> reservations = Arrays.asList(
-//                new Reservation(member, restaurant, reservationTime),
-//                new Reservation(member, restaurant, reservationTime.plusHours(2))
-//        );
-//
-//        // when
-//        when(reservationRepository.findByRestaurantId(1L)).thenReturn(reservations);
-//
-//        List<ReservationGetResDto> result = reservationService.getReservationByRestaurant(1L);
-//
-//        // then
-//        verify(reservationRepository, times(1)).findByRestaurantId(1L);
-//
-//        assertEquals(2, result.size());
-//        assertEquals(reservationTime, result.get(0).reservationTime());
-//        assertEquals(ReservationStatus.CONFIRMED, result.get(0).status());
-//    }
+        Restaurant restaurant = Restaurant.builder()
+                .id(restaurantId)
+                .name("name")
+                .address("주소")
+                .isDeleted(false)
+                .reservations(null).build();
 
+        Reservation reservation = Reservation.builder()
+                .id(reservationId)
+                .restaurant(restaurant)
+                .status(ReservationStatus.CONFIRMED)
+                .isDeleted(false)
+                .build();
 
+        when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+
+        // when
+        reservationService.deleteReservation(restaurantId, reservationId);
+
+        // then
+        verify(reservationRepository, times(1)).delete(reservation);
+    }
 }

@@ -1,7 +1,15 @@
 package org.example.easytable.reservation.dto.request;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.time.LocalDateTime;
 
-public record ReservationCreateReqDto(
-        LocalDateTime reservationTime
-) {}
+@Getter
+@RequiredArgsConstructor
+public class ReservationCreateReqDto {
+
+    private final LocalDateTime reservationTime;
+    private final int guestCount;
+
+}
