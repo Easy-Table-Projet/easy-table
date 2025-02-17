@@ -1,10 +1,16 @@
 package org.example.easytable.restaurant.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.restaurant.dto.request.RestaurantCreateDto;
+import org.example.easytable.common.utils.AuthUtil;
+import org.example.easytable.exception.CustomException;
+import org.example.easytable.exception.ErrorCode;
+import org.example.easytable.member.entity.Member;
+import org.example.easytable.member.repository.MemberRepository;
+import org.example.easytable.restaurant.dto.request.RestaurantCreateReqDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
+import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,39 +21,78 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
+    private final MemberRepository memberRepository;
 
-    public RestaurantResDto createRestaurant(RestaurantCreateDto dto) {
-        Restaurant restaurant = Restaurant.newRestaurant(dto);
+
+    @Transactional
+    public RestaurantResDto createRestaurant(RestaurantCreateReqDto restaurantCreateReqDto) {
+        Long memberId = AuthUtil.getId();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
+
+        Restaurant restaurant = Restaurant.builder()
+                .name(restaurantCreateReqDto.name())
+                .address(restaurantCreateReqDto.address())
+                .maxTableCount(restaurantCreateReqDto.maxTableCount())
+                .category(RestaurantCategory.valueOf(restaurantCreateReqDto.category()))
+                .owner(member)
+                .build();
+
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
         return RestaurantResDto.from(savedRestaurant);
     }
 
     @Transactional(readOnly = true)
-    public RestaurantResDto findRestaurantById(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
-        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
+    public RestaurantResDto getRestaurantById(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND));
         return RestaurantResDto.from(restaurant);
     }
 
     @Transactional(readOnly = true)
-    public Page<RestaurantResDto> findAllRestaurantByTitle(
-            String restaurantName,
-            Pageable pageable) { //todo: 주소 등 추가 검색 조건 파라미터 추가
-        Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitle(restaurantName, pageable);
-        //todo: 빈 리스트 일 경우 404 예외처리 필요.
+    public Page<RestaurantResDto> getAllRestaurantByTitleAndCategory(
+            String name,
+            String category,
+            Pageable pageable) {
+
+        RestaurantCategory enumCategory = (category == null || category.isEmpty())
+                ? null
+                : RestaurantCategory.valueOf(category);
+
+        Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitleAndCategory(
+                name, enumCategory, pageable);
+
         return restaurants.map(RestaurantResDto::from);
     }
+
+
     @Transactional
-    public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto dto) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
-        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
-        restaurant.updateRestaurantName(dto.restaurantName());
+    public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto restaunrantNameUpdateReqDto) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
+
+        validateOwnership(restaurant);
+
+        restaurant.updateName(restaunrantNameUpdateReqDto.name());
         return RestaurantResDto.from(restaurant);
     }
+
     @Transactional
-    public void deleteRestaurantName(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId).get();
-        //todo: 해당 아이디로 찾는 식당이 없는경우 예외처리 필요.
-        restaurant.deleteRestaurant();
+    public void deleteRestaurant(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
+
+        validateOwnership(restaurant);
+
+        restaurant.softDelete();
     }
+
+    private void validateOwnership(Restaurant restaurant) {
+        Long currentUserId = AuthUtil.getId();
+        if (!restaurant.getOwner().getId().equals(currentUserId)) {
+            throw CustomException.of(ErrorCode.FORBIDDEN, "해당 레스토랑의 소유자가 아닙니다");
+        }
+    }
+
 }

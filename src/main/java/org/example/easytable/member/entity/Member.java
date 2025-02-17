@@ -1,45 +1,53 @@
 package org.example.easytable.member.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+
+import jakarta.validation.constraints.Email;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.easytable.common.entity.BaseEntity;
-import org.example.easytable.reservation.entity.Reservation;
 
-import java.util.List;
-
-@Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity
+@Table
 public class Member extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false)
-    private String name;
+	@Column(nullable = false)
+	private String name;
 
-    @Column(nullable = false)
-    private String password;
+	@Email
+	@Column(nullable = false, unique = true)
+	private String email;
 
-    private String address;
+	@Column(nullable = false)
+	private String password;
 
-    @Enumerated(EnumType.STRING)
-    private UserType userType;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private MemberType memberType = MemberType.NONE;
 
-    private boolean isDeleted;
+	@Column(nullable = false)
+	private boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reservation> reservations;
-}
+	@Builder
+	public Member(String name, String email, String password, MemberType memberType) {
+		this.name = name;
+		this.email = email;
+		this.password = password;
+		this.memberType = memberType;
+	}
 
-enum UserType {
-    OWNER, USER
+	public void updatePassword(String encodedPassword) {
+		this.password = encodedPassword;
+	}
+
+	public void softDelete() {
+		this.isDeleted = true;
+	}
 }
