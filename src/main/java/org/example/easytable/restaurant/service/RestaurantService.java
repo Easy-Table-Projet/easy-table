@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +48,7 @@ public class RestaurantService {
                 .build();
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-        RestaurantDocument document =  RestaurantDocument.from(savedRestaurant);
+        RestaurantDocument document = RestaurantDocument.from(savedRestaurant);
         elasticSearchRepository.save(document);
         return RestaurantResDto.from(savedRestaurant);
     }

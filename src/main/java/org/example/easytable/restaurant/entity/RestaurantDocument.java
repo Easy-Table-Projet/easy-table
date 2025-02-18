@@ -2,7 +2,6 @@ package org.example.easytable.restaurant.entity;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.example.easytable.member.entity.Member;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;

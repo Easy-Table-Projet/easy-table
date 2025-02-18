@@ -2,8 +2,6 @@ package org.example.easytable.restaurant.repository;
 
 import org.example.easytable.restaurant.entity.RestaurantDocument;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface RestaurantElasticSearchRepository extends ElasticsearchRepository<RestaurantDocument, Long> {
 }
