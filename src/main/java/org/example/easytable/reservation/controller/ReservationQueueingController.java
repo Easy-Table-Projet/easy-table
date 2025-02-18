@@ -1,0 +1,79 @@
+package org.example.easytable.reservation.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.utils.AuthUtil;
+import org.example.easytable.exception.CustomException;
+import org.example.easytable.exception.ErrorCode;
+import org.example.easytable.reservation.dto.request.*;
+import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
+import org.example.easytable.reservation.dto.response.ReservationGetResDto;
+import org.example.easytable.reservation.service.ReservationRequestQueue;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+@RestController
+@RequestMapping("/api/v2/reservations")
+@RequiredArgsConstructor
+public class ReservationQueueingController {
+    private final ReservationRequestQueue requestQueue;
+
+    @PostMapping("/{restaurantId}")
+    public ResponseEntity<ReservationCreateResDto> createReservation(
+            @PathVariable Long restaurantId,
+            @RequestBody ReservationPostReqDto requestDto
+    ) {
+        Long memberId = AuthUtil.getId();
+
+        if (!requestQueue.enqueue(new ReservationCreateReqDto(restaurantId, memberId, requestDto))) {
+            throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
+        }
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{restaurantId}")
+    public ResponseEntity<List<ReservationGetResDto>> getReservation(
+            @PathVariable("restaurantId") Long restaurantId
+    ) {
+        // 재사용이 불가능한 객체이므로 메서드마다 별도로 생성
+        CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
+
+        if (!requestQueue.enqueue(new ReservationGetByRestaurantReqDto(restaurantId, future))) {
+            throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
+        }
+
+        try {
+            return ResponseEntity.ok(future.get());
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember() {
+        CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
+
+        if (!requestQueue.enqueue(new ReservationGetByMemberReqDto())) {
+            throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
+        }
+
+        try {
+            return ResponseEntity.ok(future.get());
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    @DeleteMapping("/{reservationId}")
+    public void deleteReservation(
+            @PathVariable("reservationId") Long reservationId
+    ) {
+        if (!requestQueue.enqueue(new ReservationDeleteReqDto(AuthUtil.getId()))) {
+            throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
+        }
+    }
+}

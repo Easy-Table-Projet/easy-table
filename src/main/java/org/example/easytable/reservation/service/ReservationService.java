@@ -1,16 +1,13 @@
 package org.example.easytable.reservation.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.aop.annotation.LockKey;
-import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.repository.MemberRepository;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -20,6 +17,9 @@ import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -28,9 +28,9 @@ public class ReservationService {
     private final RestaurantRepository restaurantRepository;
     private final MemberRepository memberRepository;
 
-    @RedissonLock(prefix = "restaurant:")
+    //@RedissonLock(prefix = "restaurant:")
     @Transactional
-    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationCreateReqDto reservationCreateReqDto) {
+    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationCreateReqDto) {
 
         System.out.println("Creating reservation with memberId: " + memberId);
 
