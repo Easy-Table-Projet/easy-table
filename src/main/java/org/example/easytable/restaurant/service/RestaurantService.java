@@ -11,6 +11,8 @@ import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
+import org.example.easytable.restaurant.entity.RestaurantDocument;
+import org.example.easytable.restaurant.repository.RestaurantElasticSearchRepository;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
+    private final RestaurantElasticSearchRepository elasticSearchRepository;
     private static final String CACHE_KEY = "top100Restaurants";
     private final MemberRepository memberRepository;
 
@@ -45,6 +49,8 @@ public class RestaurantService {
                 .build();
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        RestaurantDocument document =  RestaurantDocument.from(savedRestaurant);
+        elasticSearchRepository.save(document);
         return RestaurantResDto.from(savedRestaurant);
     }
 
