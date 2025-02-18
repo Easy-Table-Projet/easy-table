@@ -11,15 +11,17 @@ import java.util.concurrent.BlockingQueue;
 
 @Component
 @RequiredArgsConstructor
-public class ReservationRequestQueue {
+public class RequestCollectionQueueImpl implements RequestQueue {
     private final BlockingQueue<ReservationReqDto<?>> queue;
     private final ReservationService service;
 
+    @Override
     public boolean enqueue(ReservationReqDto<?> request) {
         return queue.offer(request);
     }
 
     // 큐에 쌓인 요청들을 처리하는 메서드
+    @Override
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
         List<ReservationReqDto<?>> requests = new ArrayList<>();

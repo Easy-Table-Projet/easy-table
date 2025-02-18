@@ -7,7 +7,7 @@ import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.reservation.dto.request.*;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
-import org.example.easytable.reservation.service.ReservationRequestQueue;
+import org.example.easytable.reservation.service.RequestQueue;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/api/v2/reservations")
 @RequiredArgsConstructor
 public class ReservationQueueingController {
-    private final ReservationRequestQueue requestQueue;
+    private final RequestQueue requestQueue;
 
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
@@ -39,6 +39,7 @@ public class ReservationQueueingController {
     public ResponseEntity<List<ReservationGetResDto>> getReservation(
             @PathVariable("restaurantId") Long restaurantId
     ) {
+        // 큐에 넣은 요청 결과를 받아오는 역할
         // 재사용이 불가능한 객체이므로 메서드마다 별도로 생성
         CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
 

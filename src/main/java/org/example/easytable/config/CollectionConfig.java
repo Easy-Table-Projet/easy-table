@@ -17,4 +17,6 @@ public class CollectionConfig {
     public BlockingQueue<ReservationReqDto<?>> blockingQueue() {
         return new ArrayBlockingQueue<>(capacity);
     }
+
+
 }
