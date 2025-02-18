@@ -2,6 +2,7 @@ package org.example.easytable.reservation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationReqDto;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 @Component
+@Qualifier("collectionQueue")
 @RequiredArgsConstructor
 public class RequestCollectionQueueImpl implements RequestQueue {
     private final BlockingQueue<ReservationReqDto<?>> queue;

@@ -2,20 +2,23 @@ package org.example.easytable.reservation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationReqDto;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-// 사용하려는 구현체에 @Component 활성화시킬 것
-// @Component
+
+@Component
+@Qualifier("redisQueue")
 @RequiredArgsConstructor
 public class RequestRedisQueueImpl implements RequestQueue {
     private static final String QUEUE_KEY = "reservation:request:queue";
@@ -34,7 +37,7 @@ public class RequestRedisQueueImpl implements RequestQueue {
     }
 
     @Override
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 100)
     public void processQueue() {
         List<ReservationReqDto<?>> requests = redisTemplate.execute(new SessionCallback<List<ReservationReqDto<?>>>() {
             @Override

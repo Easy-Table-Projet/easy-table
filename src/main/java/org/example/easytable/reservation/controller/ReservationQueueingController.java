@@ -1,6 +1,5 @@
 package org.example.easytable.reservation.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
@@ -8,6 +7,7 @@ import org.example.easytable.reservation.dto.request.*;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.service.RequestQueue;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +17,13 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v2/reservations")
-@RequiredArgsConstructor
 public class ReservationQueueingController {
     private final RequestQueue requestQueue;
+
+    // 사용할 queue 종류에 따라 Qualifier 값 변경할 것
+    public ReservationQueueingController(@Qualifier("collectionQueue") RequestQueue requestQueue) {
+        this.requestQueue = requestQueue;
+    }
 
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
@@ -58,7 +62,7 @@ public class ReservationQueueingController {
     public ResponseEntity<List<ReservationGetResDto>> getReservationByMember() {
         CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
 
-        if (!requestQueue.enqueue(new ReservationGetByMemberReqDto())) {
+        if (!requestQueue.enqueue(new ReservationGetByMemberReqDto(future))) {
             throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
         }
 

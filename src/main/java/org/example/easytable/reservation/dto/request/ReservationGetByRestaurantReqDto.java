@@ -14,8 +14,7 @@ public record ReservationGetByRestaurantReqDto(
     @Override
     public void process(ReservationService service) {
         try {
-            List<ReservationGetResDto> result = service.getReservationByRestaurant(restaurantId);
-            future.complete(result);
+            future.complete(service.getReservationByRestaurant(restaurantId));
         } catch (Exception e) {
             future.completeExceptionally(e);
         }
