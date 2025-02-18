@@ -23,7 +23,7 @@ public class RequestRedisQueueImpl implements RequestQueue {
     private final RedisTemplate<String, ReservationReqDto<?>> redisTemplate;
     private final ReservationService service;
 
-    @Value("${queue-capacity:100}")
+    @Value("${queue-capacity:25}")
     private int capacity;
 
     @Override
