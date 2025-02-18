@@ -1,9 +1,10 @@
 package org.example.easytable.restaurant.dto.request;
 
-public record RestaurantCreateDto(
+public record RestaurantCreateReqDto(
         String name,
         String address,
-        int validSeatCount,
+        int maxTableCount,
         String category
 ) {
 }
+

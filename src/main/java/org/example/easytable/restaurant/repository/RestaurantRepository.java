@@ -15,7 +15,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query(value = """
         SELECT * FROM restaurant r
         WHERE (:restaurantName IS NULL OR MATCH(r.name) AGAINST(:restaurantName IN NATURAL LANGUAGE MODE))
-        AND (:category IS NULL OR r.restaurant_category = :category)
+        AND (:category IS NULL OR r.cartegory = :category)
         AND r.is_deleted = FALSE
         """, nativeQuery = true)
     Page<Restaurant> findAllRestaurantByTitleAndCategory(
@@ -27,7 +27,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     SELECT r FROM Restaurant r
     LEFT JOIN r.reservations res
     WHERE res.reservationTime >= :oneMonthAgo
-    GROUP BY r.id, r.address, r.createdAt, r.isDeleted, r.name, r.restaurantCategory, r.updatedAt
+    GROUP BY r.id, r.address, r.createdAt, r.isDeleted, r.name, r.category, r.updatedAt
     ORDER BY COUNT(res.id) DESC
 """)
     List<Restaurant> findTop100RestaurantList(

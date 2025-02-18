@@ -1,7 +1,7 @@
 package org.example.easytable.member.controller;
 
 import org.example.easytable.member.dto.response.MeResDto;
-import org.example.easytable.utils.AuthUtil;
+import org.example.easytable.common.utils.AuthUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +33,7 @@ public class MemberController {
 
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+	public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
 		memberService.deleteUser(id);
 		return ResponseEntity.noContent().build();
 	}

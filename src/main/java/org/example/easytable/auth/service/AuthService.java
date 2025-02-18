@@ -8,7 +8,7 @@ import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.entity.MemberType;
 import org.example.easytable.member.repository.MemberRepository;
-import org.example.easytable.utils.JwtUtil;
+import org.example.easytable.common.utils.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
