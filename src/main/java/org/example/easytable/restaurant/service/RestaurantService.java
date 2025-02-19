@@ -94,6 +94,8 @@ public class RestaurantService {
         validateOwnership(restaurant);
 
         restaurant.updateName(restaunrantNameUpdateReqDto.name());
+        RestaurantDocument document = RestaurantDocument.from(restaurant);
+        elasticSearchRepository.save(document);
         return RestaurantResDto.from(restaurant);
     }
 
@@ -103,7 +105,7 @@ public class RestaurantService {
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
 
         validateOwnership(restaurant);
-
+        elasticSearchRepository.deleteById(restaurant.getId());
         restaurant.softDelete();
     }
 

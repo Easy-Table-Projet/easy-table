@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateReqDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
+import org.example.easytable.restaurant.service.RestaurantElasticSearchService;
 import org.example.easytable.restaurant.service.RestaurantService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RestaurantController {
     private final RestaurantService restaurantService;
+    private final RestaurantElasticSearchService elasticSearchService;
 
     @PostMapping//todo: 관리자 권한 설정 필요
     public ResponseEntity<RestaurantResDto> createRestaurant(
@@ -38,6 +40,14 @@ public class RestaurantController {
             @RequestParam(required = false) String category,
             Pageable pageable) {
         return ResponseEntity.ok(restaurantService.getAllRestaurantByTitleAndCategory(
+                name, category,pageable));
+    }
+    @GetMapping("/es")
+    public ResponseEntity<Page<RestaurantResDto>> getAllRestaurantByTitleAndCategoryInEs(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category,
+            Pageable pageable) {
+        return ResponseEntity.ok(elasticSearchService.searchByFilters(
                 name, category,pageable));
     }
 
