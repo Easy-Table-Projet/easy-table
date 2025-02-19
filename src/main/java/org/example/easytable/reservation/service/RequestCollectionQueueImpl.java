@@ -14,11 +14,12 @@ import java.util.concurrent.BlockingQueue;
 @Qualifier("collectionQueue")
 @RequiredArgsConstructor
 public class RequestCollectionQueueImpl implements RequestQueue {
-    private final BlockingQueue<ReservationReqDto<?>> queue;
+    private final BlockingQueue<ReservationReqDto> queue;
     private final ReservationService service;
+    private final RequestFutureStore requestFutureStore;
 
     @Override
-    public boolean enqueue(ReservationReqDto<?> request) {
+    public boolean enqueue(ReservationReqDto request) {
         return queue.offer(request);
     }
 
@@ -26,11 +27,11 @@ public class RequestCollectionQueueImpl implements RequestQueue {
     @Override
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
-        List<ReservationReqDto<?>> requests = new ArrayList<>();
+        List<ReservationReqDto> requests = new ArrayList<>();
         queue.drainTo(requests);
 
-        for (ReservationReqDto<?> req : requests) {
-            req.process(service);
+        for (ReservationReqDto req : requests) {
+            req.process(service, requestFutureStore);
         }
     }
 }

@@ -14,7 +14,7 @@ public class CollectionConfig {
     private int capacity;
 
     @Bean
-    public BlockingQueue<ReservationReqDto<?>> blockingQueue() {
+    public BlockingQueue<ReservationReqDto> blockingQueue() {
         return new ArrayBlockingQueue<>(capacity);
     }
 

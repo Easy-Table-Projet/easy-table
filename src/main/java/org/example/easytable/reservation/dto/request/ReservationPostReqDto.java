@@ -4,4 +4,4 @@ import java.time.LocalDateTime;
 
 public record ReservationPostReqDto(
         LocalDateTime reservationTime
-) {}
+) { }

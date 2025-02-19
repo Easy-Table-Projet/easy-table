@@ -7,10 +7,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class MockRequestQueue implements RequestQueue {
-    private final BlockingQueue<ReservationReqDto<?>> queue = new ArrayBlockingQueue<>(25);
+    private final BlockingQueue<ReservationReqDto> queue = new ArrayBlockingQueue<>(25);
 
     @Override
-    public boolean enqueue(ReservationReqDto<?> request) {
+    public boolean enqueue(ReservationReqDto request) {
         queue.add(request);
         return true;
     }
