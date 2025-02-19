@@ -21,7 +21,7 @@ public class RequestFutureStore {
         return futureMap.get(requestId);
     }
 
-    public void removeFuture(String requestId) {
-        futureMap.remove(requestId);
+    public CompletableFuture<List<ReservationGetResDto>> removeFuture(String requestId) {
+        return futureMap.remove(requestId);
     }
 }

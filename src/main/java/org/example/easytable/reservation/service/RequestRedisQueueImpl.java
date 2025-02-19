@@ -9,11 +9,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -41,41 +38,38 @@ public class RequestRedisQueueImpl implements RequestQueue {
     }
 
     @Override
-    @Scheduled(fixedDelay = 10000)
-    public void processQueue() {
-        List<ReservationReqDto> requests = redisTemplate.execute(new SessionCallback<>() {
+    // @Scheduled(fixedDelay = 10000)
+    public synchronized void processQueue() {
+        ReservationReqDto request = redisTemplate.execute(new SessionCallback<>() {
             @Override
-            public List<ReservationReqDto> execute(RedisOperations operations) throws DataAccessException {
+            public ReservationReqDto execute(RedisOperations operations) throws DataAccessException {
                 operations.watch(QUEUE_KEY);
 
-                // 가장 오래된 요청들을 queue size만큼 가져옴
-                Set<ReservationReqDto> requestSet = operations.opsForZSet().range(
-                        QUEUE_KEY, 0, capacity - 1);
+                // 가장 오래된 하나의 요청을 가져옴
+                Set<ReservationReqDto> requestSet = operations.opsForZSet().range(QUEUE_KEY, 0, 0);
 
                 if (requestSet == null || requestSet.isEmpty()) {
                     operations.unwatch();
-                    return Collections.emptyList();
+                    throw new RuntimeException("ReservationReqDto 조회 실패");
                 }
+
+                ReservationReqDto req = requestSet.iterator().next();
 
                 operations.multi(); // 트랜잭션 시작
 
-                for (ReservationReqDto req : requestSet) {
-                    operations.opsForZSet().remove(QUEUE_KEY, req);
-                }
+                operations.opsForZSet().remove(QUEUE_KEY, req);
 
                 List<Object> execResults = operations.exec();
 
                 if (execResults.isEmpty()) {
-                    // 트랜잭션 실패 시 재시도 로직 추가 가능
-                    return Collections.emptyList();
-                } else {
-                    return new ArrayList<>(requestSet);
+                    System.out.println("Error in execution");
+                    return null;
                 }
+
+                return req;
             }
         });
 
-        for (ReservationReqDto req : requests) {
-            req.process(service, requestFutureStore);
-        }
+        request.process(service, requestFutureStore);
     }
 }

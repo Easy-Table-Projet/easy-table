@@ -96,6 +96,19 @@ public class RequestQueueingTest {
     }
 
     @Test
+    public void getRequestTest() {
+        // given
+        String uuid = UUID.randomUUID().toString();
+        CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
+
+        // when
+        requestFutureStore.registerFuture(uuid, future);
+
+        // then
+        assertEquals(future, requestFutureStore.getFuture(uuid));
+    }
+
+    @Test
     public void processCollectionQueueTest() throws InterruptedException {
         // given
         threadCount = 250;
@@ -113,6 +126,7 @@ public class RequestQueueingTest {
                     String requestId = UUID.randomUUID().toString();
                     CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
                     requestFutureStore.registerFuture(requestId, future);
+                    System.out.println(requestFutureStore.getFuture(requestId).toString());
 
                     if (!collectionQueue.enqueue(
                             new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId))
@@ -120,6 +134,8 @@ public class RequestQueueingTest {
                         throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
                     }
                     List<ReservationGetResDto> foundReservations = future.get();
+                    System.out.println("current future:" + future.toString() +
+                        " successfully got future: " + (future == requestFutureStore.getFuture(requestId)));
                     successCnt.incrementAndGet();
                     foundReservationCount.addAndGet(foundReservations.size());
                 } catch (Exception e) {
@@ -153,19 +169,28 @@ public class RequestQueueingTest {
 
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
+                String requestId = UUID.randomUUID().toString();
+                CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
+                System.out.println("generated requestId: " + requestId);
+
                 try {
-                    String requestId = UUID.randomUUID().toString();
-                    CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
                     requestFutureStore.registerFuture(requestId, future);
+                    System.out.println(requestFutureStore.getFuture(requestId).toString());
 
                     if (!redisQueue.enqueue(new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId))) {
                         throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
                     }
+
+                    redisQueue.processQueue();
+
                     List<ReservationGetResDto> foundReservations = future.get();
+                    System.out.println("current future:" + future +
+                        " successfully got future: " + (future == requestFutureStore.getFuture(requestId)));
                     successCnt.incrementAndGet();
                     foundReservationCount.addAndGet(foundReservations.size());
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
+                    future.completeExceptionally(e);
                 } finally {
                     latch.countDown();
                 }
