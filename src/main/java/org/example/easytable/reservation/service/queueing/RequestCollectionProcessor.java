@@ -9,22 +9,22 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public class RequestProcessor {
+public class RequestCollectionProcessor {
     private final RequestFutureStore futureStore;
     private final RequestQueue requestQueue;
     // 동기화를 위한 공유 락 객체
     private final Object lock = new Object();
 
-    public RequestProcessor(
-            RequestFutureStore futureStore,
-            @Qualifier("redisQueue") RequestQueue requestQueue
+    public RequestCollectionProcessor(
+        RequestFutureStore futureStore,
+        @Qualifier("collectionQueue") RequestQueue requestQueue
     ) {
         this.futureStore = futureStore;
         this.requestQueue = requestQueue;
     }
 
     public void registerAndEnqueue(
-            String requestId, ReservationReqDto request, CompletableFuture<List<ReservationGetResDto>> future
+        String requestId, ReservationReqDto request, CompletableFuture<List<ReservationGetResDto>> future
     ) {
         synchronized (lock) {
             futureStore.registerFuture(requestId, future);

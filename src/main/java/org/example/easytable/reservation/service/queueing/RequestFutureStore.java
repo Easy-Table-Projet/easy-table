@@ -14,11 +14,11 @@ public class RequestFutureStore {
     private final ConcurrentHashMap<
             String, CompletableFuture<List<ReservationGetResDto>>> futureMap = new ConcurrentHashMap<>();
 
-    @Value("${queue-capacity:25}")
-    private int capacity;
+    // @Value("${queue-capacity:25}")
+    private final int capacity = 25;
 
     public void registerFuture(String requestId, CompletableFuture<List<ReservationGetResDto>> future) {
-        if (capacity <= futureMap.size()) { throw new RuntimeException("큐 용량 초과"); }
+        if (capacity <= futureMap.size()) { throw new RuntimeException("RequestFutureStore 용량 초과"); }
         futureMap.put(requestId, future);
     }
 

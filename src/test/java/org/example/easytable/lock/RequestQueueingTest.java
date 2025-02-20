@@ -9,8 +9,9 @@ import org.example.easytable.reservation.dto.request.ReservationCreateReqDtoImpl
 import org.example.easytable.reservation.dto.request.ReservationGetByRestaurantReqDtoImpl;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
+import org.example.easytable.reservation.service.queueing.RequestCollectionProcessor;
 import org.example.easytable.reservation.service.queueing.RequestFutureStore;
-import org.example.easytable.reservation.service.queueing.RequestProcessor;
+import org.example.easytable.reservation.service.queueing.RequestRedisProcessor;
 import org.example.easytable.reservation.service.queueing.RequestQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +39,8 @@ public class RequestQueueingTest {
     private final RequestQueue collectionQueue;
     private final RequestQueue redisQueue;
     private final MockRequestQueue mockRequestQueue;
-    private final RequestProcessor requestProcessor;
+    private final RequestRedisProcessor redisProcessor;
+    private final RequestCollectionProcessor collectionProcessor;
 
     private final Long restaurantId = 1L;
     private final Long memberId = 1L;
@@ -57,12 +56,13 @@ public class RequestQueueingTest {
         @Qualifier("mockQueue") MockRequestQueue mockRequestQueue,
         @Qualifier("collectionQueue") RequestQueue collectionQueue,
         @Qualifier("redisQueue") RequestQueue redisQueue,
-        RequestProcessor requestProcessor
+        RequestRedisProcessor redisProcessor, RequestCollectionProcessor collectionProcessor
     ) {
         this.mockRequestQueue = mockRequestQueue;
         this.collectionQueue = collectionQueue;
         this.redisQueue = redisQueue;
-        this.requestProcessor = requestProcessor;
+        this.redisProcessor = redisProcessor;
+        this.collectionProcessor = collectionProcessor;
     }
 
     @BeforeEach
@@ -128,24 +128,26 @@ public class RequestQueueingTest {
 
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
-                try {
-                    String requestId = UUID.randomUUID().toString();
-                    CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
-                    requestFutureStore.registerFuture(requestId, future);
-                    log.debug(requestFutureStore.getFuture(requestId).toString());
+                String requestId = UUID.randomUUID().toString();
+                CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
+                log.info("generated requestId: " + requestId);
 
-                    if (!collectionQueue.enqueue(
-                            new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId))
-                    ) {
-                        throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
-                    }
-                    List<ReservationGetResDto> foundReservations = future.get();
-                    log.debug("current future:" + future.toString() +
+                try {
+                    collectionProcessor.registerAndEnqueue(
+                        requestId, new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId), future);
+                    collectionQueue.processQueue();
+
+                    List<ReservationGetResDto> foundReservations = future.get(10, TimeUnit.SECONDS);
+                    log.info("current future:" + future +
                         " successfully got future: " + (future == requestFutureStore.getFuture(requestId)));
                     successCnt.incrementAndGet();
                     foundReservationCount.addAndGet(foundReservations.size());
+                } catch (TimeoutException e) {
+                    log.error("시간 초과: {}", e.getMessage());
+                    future.cancel(true);
                 } catch (Exception e) {
                     log.error(e.getMessage());
+                    future.completeExceptionally(e);
                 } finally {
                     latch.countDown();
                 }
@@ -180,15 +182,18 @@ public class RequestQueueingTest {
                 log.info("generated requestId: " + requestId);
 
                 try {
-                    requestProcessor.registerAndEnqueue(
+                    redisProcessor.registerAndEnqueue(
                             requestId, new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId), future);
                     redisQueue.processQueue();
 
-                    List<ReservationGetResDto> foundReservations = future.get();
+                    List<ReservationGetResDto> foundReservations = future.get(10, TimeUnit.SECONDS);
                     log.info("current future:" + future +
                         " successfully got future: " + (future == requestFutureStore.getFuture(requestId)));
                     successCnt.incrementAndGet();
                     foundReservationCount.addAndGet(foundReservations.size());
+                } catch (TimeoutException e) {
+                    log.error("시간 초과: {}", e.getMessage());
+                    future.cancel(true);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                     future.completeExceptionally(e);

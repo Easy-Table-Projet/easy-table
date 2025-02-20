@@ -26,32 +26,12 @@ public class RequestRedisQueueImpl implements RequestQueue {
 
     @Override
     public boolean enqueue(ReservationReqDto request) {
+        Long size = redisTemplate.opsForSet().size(QUEUE_KEY);
+        if(size == null) { throw new RuntimeException("큐 조회 실패"); }
+        if(size >= capacity) { throw new RuntimeException("Redis 큐 용량 초과"); }
         Long result = redisTemplate.opsForSet().add(QUEUE_KEY, request);
         log.debug("queued Request: {}", request);
         return result != null;
-        /*
-        String luaScript = "local current = redis.call('SCARD', KEYS[1]) " +
-                "if current < tonumber(ARGV[1]) then " +
-                "  redis.call('SADD', KEYS[1], ARGV[2]) " +
-                "  return 1 " +
-                "else " +
-                "  return 0 " +
-                "end";
-
-        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-        redisScript.setScriptText(luaScript);
-        redisScript.setResultType(Long.class);
-
-        // capacity와 request 값을 파라미터로 전달
-        Long result = redisTemplate.execute(
-                redisScript,
-                List.of(QUEUE_KEY),
-                String.valueOf(capacity),
-                request.toString() // ReservationReqDto가 문자열로 변환 가능한 경우, 혹은 필요한 직렬화 로직 적용
-        );
-
-        return result == 1;
-         */
     }
 
     @Override
