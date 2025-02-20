@@ -1,7 +1,8 @@
-package org.example.easytable.reservation.service;
+package org.example.easytable.reservation.service.queueing;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationReqDto;
+import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

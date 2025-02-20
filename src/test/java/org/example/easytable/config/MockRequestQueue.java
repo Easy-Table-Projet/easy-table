@@ -1,7 +1,7 @@
 package org.example.easytable.config;
 
 import org.example.easytable.reservation.dto.request.ReservationReqDto;
-import org.example.easytable.reservation.service.RequestQueue;
+import org.example.easytable.reservation.service.queueing.RequestQueue;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

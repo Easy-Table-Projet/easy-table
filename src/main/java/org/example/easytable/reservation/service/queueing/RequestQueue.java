@@ -1,4 +1,4 @@
-package org.example.easytable.reservation.service;
+package org.example.easytable.reservation.service.queueing;
 
 import org.example.easytable.reservation.dto.request.ReservationReqDto;
 

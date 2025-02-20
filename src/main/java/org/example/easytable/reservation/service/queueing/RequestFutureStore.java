@@ -1,6 +1,7 @@
-package org.example.easytable.reservation.service;
+package org.example.easytable.reservation.service.queueing;
 
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,7 +14,11 @@ public class RequestFutureStore {
     private final ConcurrentHashMap<
             String, CompletableFuture<List<ReservationGetResDto>>> futureMap = new ConcurrentHashMap<>();
 
+    @Value("${queue-capacity:25}")
+    private int capacity;
+
     public void registerFuture(String requestId, CompletableFuture<List<ReservationGetResDto>> future) {
+        if (capacity <= futureMap.size()) { throw new RuntimeException("큐 용량 초과"); }
         futureMap.put(requestId, future);
     }
 

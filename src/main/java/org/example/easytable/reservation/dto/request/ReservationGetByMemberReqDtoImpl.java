@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
-import org.example.easytable.reservation.service.RequestFutureStore;
+import org.example.easytable.reservation.service.queueing.RequestFutureStore;
 import org.example.easytable.reservation.service.ReservationService;
 
 import java.util.List;

@@ -1,5 +1,6 @@
 package org.example.easytable.lock;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.config.MockRequestQueue;
 import org.example.easytable.config.QueueingTestConfig;
 import org.example.easytable.exception.CustomException;
@@ -8,8 +9,9 @@ import org.example.easytable.reservation.dto.request.ReservationCreateReqDtoImpl
 import org.example.easytable.reservation.dto.request.ReservationGetByRestaurantReqDtoImpl;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
-import org.example.easytable.reservation.service.RequestFutureStore;
-import org.example.easytable.reservation.service.RequestQueue;
+import org.example.easytable.reservation.service.queueing.RequestFutureStore;
+import org.example.easytable.reservation.service.queueing.RequestProcessor;
+import org.example.easytable.reservation.service.queueing.RequestQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,10 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration(classes = {QueueingTestConfig.class})
+@Slf4j
 public class RequestQueueingTest {
     private final RequestQueue collectionQueue;
     private final RequestQueue redisQueue;
     private final MockRequestQueue mockRequestQueue;
+    private final RequestProcessor requestProcessor;
 
     private final Long restaurantId = 1L;
     private final Long memberId = 1L;
@@ -50,13 +54,15 @@ public class RequestQueueingTest {
 
     @Autowired
     public RequestQueueingTest(
-            @Qualifier("mockQueue") MockRequestQueue mockRequestQueue,
-            @Qualifier("collectionQueue") RequestQueue collectionQueue,
-            @Qualifier("redisQueue") RequestQueue redisQueue
+        @Qualifier("mockQueue") MockRequestQueue mockRequestQueue,
+        @Qualifier("collectionQueue") RequestQueue collectionQueue,
+        @Qualifier("redisQueue") RequestQueue redisQueue,
+        RequestProcessor requestProcessor
     ) {
         this.mockRequestQueue = mockRequestQueue;
         this.collectionQueue = collectionQueue;
         this.redisQueue = redisQueue;
+        this.requestProcessor = requestProcessor;
     }
 
     @BeforeEach
@@ -81,7 +87,7 @@ public class RequestQueueingTest {
                             restaurantId, memberId, postReqDto));
                     successCnt.incrementAndGet();
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    log.error(e.getMessage());
                 } finally {
                     latch.countDown();
                 }
@@ -126,7 +132,7 @@ public class RequestQueueingTest {
                     String requestId = UUID.randomUUID().toString();
                     CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
                     requestFutureStore.registerFuture(requestId, future);
-                    System.out.println(requestFutureStore.getFuture(requestId).toString());
+                    log.debug(requestFutureStore.getFuture(requestId).toString());
 
                     if (!collectionQueue.enqueue(
                             new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId))
@@ -134,12 +140,12 @@ public class RequestQueueingTest {
                         throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
                     }
                     List<ReservationGetResDto> foundReservations = future.get();
-                    System.out.println("current future:" + future.toString() +
+                    log.debug("current future:" + future.toString() +
                         " successfully got future: " + (future == requestFutureStore.getFuture(requestId)));
                     successCnt.incrementAndGet();
                     foundReservationCount.addAndGet(foundReservations.size());
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    log.error(e.getMessage());
                 } finally {
                     latch.countDown();
                 }
@@ -171,26 +177,20 @@ public class RequestQueueingTest {
             executorService.submit(() -> {
                 String requestId = UUID.randomUUID().toString();
                 CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
-                System.out.println("generated requestId: " + requestId);
+                log.info("generated requestId: " + requestId);
 
                 try {
-                    requestFutureStore.registerFuture(requestId, future);
-                    System.out.println("saved future: " + requestFutureStore.getFuture(requestId).toString()
-                            + ", requestId: " + requestId);
-
-                    if (!redisQueue.enqueue(new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId))) {
-                        throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
-                    }
-
+                    requestProcessor.registerAndEnqueue(
+                            requestId, new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId), future);
                     redisQueue.processQueue();
 
                     List<ReservationGetResDto> foundReservations = future.get();
-                    System.out.println("current future:" + future +
+                    log.info("current future:" + future +
                         " successfully got future: " + (future == requestFutureStore.getFuture(requestId)));
                     successCnt.incrementAndGet();
                     foundReservationCount.addAndGet(foundReservations.size());
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    log.error(e.getMessage());
                     future.completeExceptionally(e);
                 } finally {
                     latch.countDown();
