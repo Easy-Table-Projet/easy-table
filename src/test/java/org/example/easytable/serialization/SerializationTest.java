@@ -3,7 +3,6 @@ package org.example.easytable.serialization;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.easytable.reservation.dto.request.ReservationGetByRestaurantReqDtoImpl;
-import org.example.easytable.reservation.dto.request.ReservationReqDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +18,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class SerializationTest {
-    private final RedisTemplate<String, ReservationReqDto> redisTemplate;
+    private final RedisTemplate<String, ReservationGetByRestaurantReqDtoImpl> redisTemplate;
 
     @Autowired
-    public SerializationTest(RedisTemplate<String, ReservationReqDto> redisTemplate) {
+    public SerializationTest(RedisTemplate<String, ReservationGetByRestaurantReqDtoImpl> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
     @Test
-    public void testSerialization() throws Exception {
+    public void serializationTest() throws Exception {
         // given
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -45,7 +44,7 @@ public class SerializationTest {
     }
 
     @Test
-    public void testRedisSerialization() throws Exception {
+    public void redisSerializationTest() throws Exception {
         // given
         String redisKey = "test:reservation:req";
 
@@ -54,17 +53,13 @@ public class SerializationTest {
             new ReservationGetByRestaurantReqDtoImpl(1L, originalRequestId);
 
         // when
-        redisTemplate.opsForValue().set(redisKey, originalObject);
+        redisTemplate.opsForSet().add(redisKey, originalObject);
 
-        ReservationGetByRestaurantReqDtoImpl retrievedObject =
-            (ReservationGetByRestaurantReqDtoImpl) redisTemplate.opsForValue().get(redisKey);
+        ReservationGetByRestaurantReqDtoImpl retrievedObject = redisTemplate.opsForSet().pop(redisKey);
 
         // then
         assertNotNull(retrievedObject);
         assertEquals(originalObject.getRestaurantId(), retrievedObject.getRestaurantId());
         assertEquals(originalObject.getRequestId(), retrievedObject.getRequestId());
-
-        System.out.println("Original Object: " + originalObject);
-        System.out.println("Retrieved Object: " + retrievedObject);
     }
 }

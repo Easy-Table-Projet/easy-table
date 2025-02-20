@@ -175,7 +175,8 @@ public class RequestQueueingTest {
 
                 try {
                     requestFutureStore.registerFuture(requestId, future);
-                    System.out.println(requestFutureStore.getFuture(requestId).toString());
+                    System.out.println("saved future: " + requestFutureStore.getFuture(requestId).toString()
+                            + ", requestId: " + requestId);
 
                     if (!redisQueue.enqueue(new ReservationGetByRestaurantReqDtoImpl(restaurantId, requestId))) {
                         throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);

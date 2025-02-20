@@ -5,5 +5,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @TestConfiguration
 @EnableScheduling
-public class TestSchedulingConfig {
+public class SchedulingTestConfig {
 }

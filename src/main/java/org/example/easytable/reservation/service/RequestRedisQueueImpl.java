@@ -5,14 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.reservation.dto.request.ReservationReqDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Set;
 
 
 @Component
@@ -31,44 +25,18 @@ public class RequestRedisQueueImpl implements RequestQueue {
 
     @Override
     public boolean enqueue(ReservationReqDto request) {
-        double currentTime = System.currentTimeMillis();
-        Boolean result = redisTemplate.opsForZSet().add(QUEUE_KEY, request, currentTime);
+        Long result = redisTemplate.opsForSet().add(QUEUE_KEY, request);
         log.debug("queued Request: {}", request);
-        return result != null && result;
+        return result != null;
     }
 
     @Override
     // @Scheduled(fixedDelay = 10000)
     public synchronized void processQueue() {
-        ReservationReqDto request = redisTemplate.execute(new SessionCallback<>() {
-            @Override
-            public ReservationReqDto execute(RedisOperations operations) throws DataAccessException {
-                operations.watch(QUEUE_KEY);
-
-                // 가장 오래된 하나의 요청을 가져옴
-                Set<ReservationReqDto> requestSet = operations.opsForZSet().range(QUEUE_KEY, 0, 0);
-
-                if (requestSet == null || requestSet.isEmpty()) {
-                    operations.unwatch();
-                    throw new RuntimeException("ReservationReqDto 조회 실패");
-                }
-
-                ReservationReqDto req = requestSet.iterator().next();
-
-                operations.multi(); // 트랜잭션 시작
-
-                operations.opsForZSet().remove(QUEUE_KEY, req);
-
-                List<Object> execResults = operations.exec();
-
-                if (execResults.isEmpty()) {
-                    System.out.println("Error in execution");
-                    return null;
-                }
-
-                return req;
-            }
-        });
+        ReservationReqDto request = redisTemplate.opsForSet().pop(QUEUE_KEY);
+        if (request == null) {
+            throw new RuntimeException("ReservationReqDto 조회 실패");
+        }
 
         request.process(service, requestFutureStore);
     }
