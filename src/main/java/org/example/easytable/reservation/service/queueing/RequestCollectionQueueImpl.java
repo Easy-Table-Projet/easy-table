@@ -1,26 +1,25 @@
 package org.example.easytable.reservation.service.queueing;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.reservation.dto.request.ReservationReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-
 @Component
 @Qualifier("collectionQueue")
 @RequiredArgsConstructor
 public class RequestCollectionQueueImpl implements RequestQueue {
-    private final BlockingQueue<ReservationReqDto> queue;
+    private final BlockingQueue<ReservationCreateReqDto> queue;
     private final ReservationService service;
     private final RequestFutureStore requestFutureStore;
 
     @Override
-    public boolean enqueue(ReservationReqDto request) {
+    public boolean enqueue(ReservationCreateReqDto request) {
         return queue.offer(request);
     }
 
@@ -28,11 +27,11 @@ public class RequestCollectionQueueImpl implements RequestQueue {
     @Override
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
-        List<ReservationReqDto> requests = new ArrayList<>();
+        List<ReservationCreateReqDto> requests = new ArrayList<>();
         queue.drainTo(requests);
 
-        for (ReservationReqDto req : requests) {
-            req.process(service, requestFutureStore);
+        for (ReservationCreateReqDto req : requests) {
+            service.createReservation(req);
         }
     }
 }
