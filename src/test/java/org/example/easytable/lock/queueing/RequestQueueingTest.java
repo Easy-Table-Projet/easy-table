@@ -1,4 +1,4 @@
-package org.example.easytable.lock;
+package org.example.easytable.lock.queueing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

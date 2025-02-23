@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
@@ -27,6 +28,7 @@ public class CreateReservationQueueService {
     private final ReservationService reservationService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     // 각 예약 요청의 결과를 전달하기 위한 Sinks (예약 ID -> Sinks.One)
+    @Getter
     private final ConcurrentHashMap<String, Sinks.One<ReservationCreateResDto>> resultSinkMap =
             new ConcurrentHashMap<>();
 

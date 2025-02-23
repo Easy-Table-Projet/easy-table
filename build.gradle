@@ -40,6 +40,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'io.projectreactor:reactor-test'
 
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
