@@ -40,6 +40,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'io.projectreactor:reactor-test'
 
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -57,6 +58,7 @@ dependencies {
     // Redis
     implementation 'org.redisson:redisson:3.44.0'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
     // jpa가 생성한 쿼리에서 실제로 사용된 ?를 보여줌
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'

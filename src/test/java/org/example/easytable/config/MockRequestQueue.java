@@ -1,16 +1,16 @@
 package org.example.easytable.config;
 
-import org.example.easytable.reservation.dto.request.ReservationReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.service.queueing.RequestQueue;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class MockRequestQueue implements RequestQueue {
-    private final BlockingQueue<ReservationReqDto> queue = new ArrayBlockingQueue<>(25);
+    private final BlockingQueue<ReservationCreateReqDto> queue = new ArrayBlockingQueue<>(25);
 
     @Override
-    public boolean enqueue(ReservationReqDto request) {
+    public boolean enqueue(ReservationCreateReqDto request) {
         queue.add(request);
         return true;
     }

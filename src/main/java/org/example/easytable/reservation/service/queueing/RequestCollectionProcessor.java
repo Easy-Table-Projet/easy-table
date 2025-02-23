@@ -1,6 +1,6 @@
 package org.example.easytable.reservation.service.queueing;
 
-import org.example.easytable.reservation.dto.request.ReservationReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class RequestCollectionProcessor {
     }
 
     public void registerAndEnqueue(
-        String requestId, ReservationReqDto request, CompletableFuture<List<ReservationGetResDto>> future
+        String requestId, ReservationCreateReqDto request, CompletableFuture<List<ReservationGetResDto>> future
     ) {
         synchronized (lock) {
             futureStore.registerFuture(requestId, future);
