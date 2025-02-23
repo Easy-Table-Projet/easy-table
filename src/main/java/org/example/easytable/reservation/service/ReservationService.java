@@ -2,6 +2,7 @@ package org.example.easytable.reservation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.aop.annotation.LockKey;
+import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
@@ -28,7 +29,7 @@ public class ReservationService {
     private final RestaurantRepository restaurantRepository;
     private final MemberRepository memberRepository;
 
-    //@RedissonLock(prefix = "restaurant:")
+    @RedissonLock(prefix = "restaurant:")
     @Transactional
     public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationCreateReqDto) {
 
