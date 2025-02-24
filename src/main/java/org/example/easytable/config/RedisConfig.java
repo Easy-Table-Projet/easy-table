@@ -21,37 +21,34 @@ public class RedisConfig {
     @Value("${spring.data.redis.port:6379}")
     private int redisPort;
 
+    // 하나의 LettuceConnectionFactory bean 생성 (동기, 비동기 모두 사용 가능)
     @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
+    public LettuceConnectionFactory lettuceConnectionFactory() {
         return new LettuceConnectionFactory(redisHost, redisPort);
     }
 
     @Bean
-    public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
-        return new LettuceConnectionFactory(redisHost, redisPort);
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> createTemplate() {
+    public RedisTemplate<String, Object> createTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-
-        return setupRedisTemplate(redisTemplate, new Jackson2JsonRedisSerializer<>(
-           Object.class));
+        return setupRedisTemplate(redisTemplate,
+                new Jackson2JsonRedisSerializer<>(Object.class),
+                lettuceConnectionFactory);
     }
 
     @Bean
     public ReactiveRedisTemplate<String, ReservationCreateReqDto> createReservationTemplate(
-            ReactiveRedisConnectionFactory factory
+            LettuceConnectionFactory lettuceConnectionFactory
     ) {
-        return setupReactiveRedisTemplate(factory,
-            new Jackson2JsonRedisSerializer<>(ReservationCreateReqDto.class));
+        return setupReactiveRedisTemplate(lettuceConnectionFactory,
+                new Jackson2JsonRedisSerializer<>(ReservationCreateReqDto.class));
     }
 
     private <T> RedisTemplate<String, T> setupRedisTemplate(
             RedisTemplate<String, T> template,
-            Jackson2JsonRedisSerializer<T> serializer
+            Jackson2JsonRedisSerializer<T> serializer,
+            RedisConnectionFactory connectionFactory
     ) {
-        template.setConnectionFactory(redisConnectionFactory());
+        template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(serializer);
         template.setDefaultSerializer(serializer);
