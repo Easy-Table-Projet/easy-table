@@ -3,7 +3,7 @@ package org.example.easytable.reservation.service;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.entity.MemberType;
 import org.example.easytable.member.repository.MemberRepository;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
@@ -23,11 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 // 실제로 발생할 수 있는 동시성 문제 검증을 위해 mock 객체 대신 실제 객체를 주입받음
 @ExtendWith(SpringExtension.class)
@@ -102,7 +100,7 @@ public class ReservationConcurrencyTest {
                 try {
                     barrier.await(); // 모든 스레드가 여기서 만남
 
-                    ReservationCreateReqDto reqDto = new ReservationCreateReqDto(LocalDateTime.now());
+                    ReservationPostReqDto reqDto = new ReservationPostReqDto(LocalDateTime.now());
                     reservationService.createReservation(restaurantId, memberId, reqDto);
                     results.add("✅ Thread-" + Thread.currentThread().getName() + " 성공");
                     successCnt.incrementAndGet();
