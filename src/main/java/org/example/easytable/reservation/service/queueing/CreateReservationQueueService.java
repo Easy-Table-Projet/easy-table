@@ -3,8 +3,6 @@ package org.example.easytable.reservation.service.queueing;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
@@ -17,10 +15,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+import reactor.core.scheduler.Schedulers;
+
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class CreateReservationQueueService {
+    private static final int MAX_PROCESSING_QUEUE_LENGTH = 100;
     private static final String WAITING_QUEUE_KEY = "reservation:waiting";
     private static final String PROCESSING_QUEUE_KEY = "reservation:processing";
 
@@ -38,6 +41,7 @@ public class CreateReservationQueueService {
         String json = serialize(request);
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();
         resultSinkMap.put(request.getRequestId(), sink);
+        System.out.println("added Request ID: " + request.getRequestId());
         return redisTemplate.opsForZSet().add(WAITING_QUEUE_KEY, json, score);
     }
 
@@ -66,38 +70,61 @@ public class CreateReservationQueueService {
                 .flatMap(json ->
                         redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY, json)
                                 .filter(removed -> removed > 0)
-                                .flatMap(removed -> {
-                                    double score = System.currentTimeMillis();
-                                    return redisTemplate.opsForZSet().add(PROCESSING_QUEUE_KEY, json, score)
-                                            .then(Mono.just(json));
-                                })
+                                .flatMap(removed ->
+                                        redisTemplate.opsForZSet().size(PROCESSING_QUEUE_KEY)
+                                                .flatMap(size -> {
+                                                    if (size < MAX_PROCESSING_QUEUE_LENGTH) {
+                                                        double score = System.currentTimeMillis();
+                                                        return redisTemplate.opsForZSet().add(PROCESSING_QUEUE_KEY, json, score)
+                                                                .thenReturn(json);
+                                                    } else {
+                                                        // PROCESSING_QUEUE가 최대 크기에 도달한 경우 Mono.empty()를 반환하여 추가하지 않음
+                                                        return Mono.empty();
+                                                    }
+                                                })
+                                )
                 )
                 .onErrorContinue((throwable, obj) -> {
-                    System.err.println("Error processing item: " + obj + ", error: " + throwable.getMessage());
+                    System.err.println("Error processing item in initial phase: " + obj + ", error: " + throwable.getMessage());
                 })
-                .flatMap(json -> {
-                    ReservationCreateReqDto request = deserialize(json);
-                    return processReservation(request)
-                            .doFinally(signalType -> {
-                                // 처리 완료 후 오류 여부와 관계없이 PROCESSING_QUEUE_KEY에서 제거
-                                redisTemplate.opsForZSet().remove(PROCESSING_QUEUE_KEY, json).subscribe();
-                            });
-                })
-                .subscribe(result -> {  // 생성된 ReservationCreateResDto를 Sink로 전달
+                .flatMap(json ->
+                        Mono.fromCallable(() -> {
+                                    System.out.println("요청 역직렬화 중");
+                                    return deserialize(json);
+                                })
+                                .flatMap(request ->
+                                        processReservation(request)
+                                                .publishOn(Schedulers.boundedElastic())
+                                                // 처리 완료 후 PROCESSING_QUEUE에서 제거하는 작업을 체인에 포함
+                                                .flatMap(result ->
+                                                        redisTemplate.opsForZSet().remove(PROCESSING_QUEUE_KEY, json)
+                                                                .thenReturn(result)
+                                                )
+                                )
+                                .onErrorResume(e -> {
+                                    System.out.println("Deserialization/processing error for json: " + json + ", error: " + e.getMessage());
+                                    return redisTemplate.opsForZSet().remove(PROCESSING_QUEUE_KEY, json)
+                                            .then(Mono.empty());
+                                })
+                )
+                .subscribe(result -> {
+                    System.out.println("요청 처리 결과 반환 중\nresult: " + result);
                     Sinks.One<ReservationCreateResDto> sink = resultSinkMap.remove(result.requestId());
-                    if (sink != null) {
-                        sink.tryEmitValue(result);
+                    if (sink == null) {
+                        throw new IllegalStateException("Sink not found");
                     }
+                    sink.tryEmitValue(result);
                 }, error -> {
                     System.err.println("Error in processQueue: " + error.getMessage());
                 });
     }
 
     private Mono<ReservationCreateResDto> processReservation(ReservationCreateReqDto request) {
+        System.out.println("요청 처리 중");
         return Mono.fromCallable(() -> reservationService.createReservation(request));
     }
 
-    private String serialize(ReservationCreateReqDto request) {
+    public String serialize(ReservationCreateReqDto request) {
         try {
             return objectMapper.writeValueAsString(request);
         } catch (JsonProcessingException e) {
@@ -105,9 +132,11 @@ public class CreateReservationQueueService {
         }
     }
 
-    private ReservationCreateReqDto deserialize(String json) {
+    public ReservationCreateReqDto deserialize(String json) {
         try {
-            return objectMapper.readValue(json, ReservationCreateReqDto.class);
+            ReservationCreateReqDto dto = objectMapper.readValue(json, ReservationCreateReqDto.class);
+            System.out.println("deserialized requestId: " + dto.getRequestId());
+            return dto;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
