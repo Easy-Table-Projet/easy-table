@@ -2,14 +2,15 @@ package org.example.easytable.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.repository.ReservationQueueRepository;
 import org.example.easytable.reservation.service.ReservationService;
 import org.example.easytable.reservation.service.queueing.CreateReservationQueueService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+
 
 public class SerializationTest {
     private CreateReservationQueueService service;
@@ -17,9 +18,9 @@ public class SerializationTest {
     // ReservationService는 직렬화/역직렬화 메서드에서 사용하지 않으므로, 더미 객체(mock)를 전달합니다.
     @BeforeEach
     public void setup() {
-        ReactiveRedisTemplate<String, String> redisTemplate = mock(ReactiveRedisTemplate.class);
+        ReservationQueueRepository reservationQueue = mock(ReservationQueueRepository.class);
         ReservationService reservationService = mock(ReservationService.class);
-        service = new CreateReservationQueueService(redisTemplate, reservationService);
+        service = new CreateReservationQueueService(reservationService, reservationQueue);
     }
 
     @Test

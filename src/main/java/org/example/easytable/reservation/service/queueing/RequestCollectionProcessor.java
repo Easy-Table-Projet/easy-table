@@ -16,15 +16,15 @@ public class RequestCollectionProcessor {
     private final Object lock = new Object();
 
     public RequestCollectionProcessor(
-        RequestFutureStore futureStore,
-        @Qualifier("collectionQueue") RequestQueue requestQueue
+            RequestFutureStore futureStore,
+            @Qualifier("collectionQueue") RequestQueue requestQueue
     ) {
         this.futureStore = futureStore;
         this.requestQueue = requestQueue;
     }
 
     public void registerAndEnqueue(
-        String requestId, ReservationCreateReqDto request, CompletableFuture<List<ReservationGetResDto>> future
+            String requestId, ReservationCreateReqDto request, CompletableFuture<List<ReservationGetResDto>> future
     ) {
         synchronized (lock) {
             futureStore.registerFuture(requestId, future);

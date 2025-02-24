@@ -4,13 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
+import org.example.easytable.reservation.repository.ReservationQueueRepository;
 import org.example.easytable.reservation.service.ReservationService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -21,22 +21,28 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@RequiredArgsConstructor
-// TODO: QueueService와 Redis 의존성 분리하기
-// TODO: Java Collection으로 구현된 부분에도 CreateReservationQueueService 적옹시키기
 // TODO: processQueue()의 거대한 로직 분리시키기
+// TODO: serialize 메서드들 분리시키기
 public class CreateReservationQueueService {
     private static final int MAX_PROCESSING_QUEUE_LENGTH = 100;
     private static final String WAITING_QUEUE_KEY = "reservation:waiting";
     private static final String PROCESSING_QUEUE_KEY = "reservation:processing";
 
-    private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ReservationService reservationService;
+    private final ReservationQueueRepository reservationQueue;
     private final ObjectMapper objectMapper = new ObjectMapper();
     // 각 예약 요청의 결과를 전달하기 위한 Sinks (예약 ID -> Sinks.One)
     @Getter
     private final ConcurrentHashMap<String, Sinks.One<ReservationCreateResDto>> resultSinkMap =
             new ConcurrentHashMap<>();
+
+    public CreateReservationQueueService(
+            ReservationService reservationService,
+            @Qualifier("redisQueue") ReservationQueueRepository reservationQueueRepository
+    ) {
+        this.reservationService = reservationService;
+        this.reservationQueue = reservationQueueRepository;
+    }
 
     // 예약 요청을 waiting queue에 저장 (ZSet에 timestamp를 score로 사용)
     public Mono<Boolean> enqueueReservation(ReservationCreateReqDto request) {
@@ -45,15 +51,15 @@ public class CreateReservationQueueService {
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();
         resultSinkMap.put(request.getRequestId(), sink);
         System.out.println("added Request ID: " + request.getRequestId());
-        return redisTemplate.opsForZSet().add(WAITING_QUEUE_KEY, json, score);
+        return reservationQueue.addToWaitingQueue(json, score);
     }
 
     // 예약 취소: waiting queue에서 해당 예약을 제거
     public Mono<Boolean> cancelReservation(String reservationId) {
         Range<Long> range = Range.of(Bound.inclusive(0L), Bound.unbounded());
-        return redisTemplate.opsForZSet().range(WAITING_QUEUE_KEY, range)
+        return reservationQueue.getWaitingQueueRange(range)
                 .filter(json -> Objects.equals(getIdFromJson(json), reservationId))
-                .flatMap(json -> redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY, json))
+                .flatMap(reservationQueue::removeFromWaitingQueue)
                 .hasElements();
     }
 
@@ -69,45 +75,30 @@ public class CreateReservationQueueService {
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
         Range<Long> range = Range.of(Bound.inclusive(0L), Bound.inclusive(0L));
-        redisTemplate.opsForZSet().range(WAITING_QUEUE_KEY, range)
-                .flatMap(json ->
-                        redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY, json)
-                                .filter(removed -> removed > 0)
-                                .flatMap(removed ->
-                                        redisTemplate.opsForZSet().size(PROCESSING_QUEUE_KEY)
-                                                .flatMap(size -> {
-                                                    if (size < MAX_PROCESSING_QUEUE_LENGTH) {
-                                                        double score = System.currentTimeMillis();
-                                                        return redisTemplate.opsForZSet().add(PROCESSING_QUEUE_KEY, json, score)
-                                                                .thenReturn(json);
-                                                    } else {
-                                                        // PROCESSING_QUEUE가 최대 크기에 도달한 경우 Mono.empty()를 반환하여 추가하지 않음
-                                                        return Mono.empty();
-                                                    }
-                                                })
-                                )
-                )
-                .onErrorContinue((throwable, obj) -> {
+        reservationQueue.getWaitingQueueRange(range).flatMap(json ->
+                reservationQueue.removeFromWaitingQueue(json).filter(removed -> removed > 0).flatMap(removed ->
+                        reservationQueue.getProcessingQueueSize().flatMap(size -> {
+                            if (size < MAX_PROCESSING_QUEUE_LENGTH) {
+                                double score = System.currentTimeMillis();
+                                return reservationQueue.addToProcessingQueue(json, score).thenReturn(json);
+                            } else {
+                                // PROCESSING_QUEUE가 최대 크기에 도달한 경우 Mono.empty()를 반환하여 추가하지 않음
+                                return Mono.empty();
+                            }
+                        })
+                )).onErrorContinue((throwable, obj) -> {
                     System.err.println("Error processing item in initial phase: " + obj + ", error: " + throwable.getMessage());
-                })
-                .flatMap(json ->
+                }).flatMap(json ->
                         Mono.fromCallable(() -> {
-                                    System.out.println("요청 역직렬화 중");
-                                    return deserialize(json);
-                                })
-                                .flatMap(request ->
-                                        processReservation(request)
-                                                .publishOn(Schedulers.boundedElastic())
-                                                // 처리 완료 후 PROCESSING_QUEUE에서 제거하는 작업을 체인에 포함
-                                                .flatMap(result ->
-                                                        redisTemplate.opsForZSet().remove(PROCESSING_QUEUE_KEY, json)
-                                                                .thenReturn(result)
-                                                )
-                                )
+                            System.out.println("요청 역직렬화 중");
+                            return deserialize(json);
+                        }).flatMap(request -> processReservation(request)
+                                .publishOn(Schedulers.boundedElastic()).flatMap(result ->
+                                        reservationQueue.removeFromProcessingQueue(json).thenReturn(result)
+                                ))
                                 .onErrorResume(e -> {
                                     System.out.println("Deserialization/processing error for json: " + json + ", error: " + e.getMessage());
-                                    return redisTemplate.opsForZSet().remove(PROCESSING_QUEUE_KEY, json)
-                                            .then(Mono.empty());
+                                    return reservationQueue.removeFromProcessingQueue(json).then(Mono.empty());
                                 })
                 )
                 .subscribe(result -> {
