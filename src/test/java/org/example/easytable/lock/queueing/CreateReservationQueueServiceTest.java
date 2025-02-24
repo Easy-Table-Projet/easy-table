@@ -32,6 +32,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateReservationQueueServiceTest {
+    private final Long MAX_PROCESSING_QUEUE_LENGTH = 100L;
+
     @Mock
     private ReservationService reservationService;
 
@@ -133,7 +135,7 @@ public class CreateReservationQueueServiceTest {
                 .verifyComplete();
 
         // processQueue() 호출 시 waiting queue 범위 및 제거 stub 설정
-        Range<Long> waitingRange = Range.of(Bound.inclusive(0L), Bound.inclusive(0L));
+        Range<Long> waitingRange = Range.of(Bound.inclusive(0L), Bound.inclusive(MAX_PROCESSING_QUEUE_LENGTH - 1));
         when(reservationQueue.getWaitingQueueRange(waitingRange)).thenReturn(Flux.just(serializedJson));
         when(reservationQueue.removeFromWaitingQueue(serializedJson)).thenReturn(Mono.just(1L));
 

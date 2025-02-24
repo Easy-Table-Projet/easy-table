@@ -71,13 +71,14 @@ public class CreateReservationQueueService {
 
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
-        Range<Long> waitingRange = Range.of(Bound.inclusive(0L), Bound.inclusive(0L));
+        Range<Long> waitingRange = Range.of(
+                Bound.inclusive(0L), Bound.inclusive((long) MAX_PROCESSING_QUEUE_LENGTH - 1));
         reservationQueue.getWaitingQueueRange(waitingRange)
                 .flatMap(this::moveToProcessingQueue)
                 .onErrorContinue((throwable, obj) ->
                     System.err.println(
                         "Error processing item in initial phase: " + obj + ", error: " + throwable.getMessage()))
-                .flatMap(this::deserializeAndProcess)
+                .concatMap(this::deserializeAndProcess) // 역직렬화 및 처리도 순차적으로 진행
                 .subscribe(
                     this::handleResult,
                     error -> System.err.println("Error in processQueue: " + error.getMessage())
