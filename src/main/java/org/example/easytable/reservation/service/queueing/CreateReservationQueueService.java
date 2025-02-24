@@ -1,9 +1,8 @@
 package org.example.easytable.reservation.service.queueing;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.repository.ReservationQueueRepository;
@@ -30,7 +29,9 @@ public class CreateReservationQueueService {
 
     private final ReservationService reservationService;
     private final ReservationQueueRepository reservationQueue;
+    private final SerializerUtil<ReservationCreateReqDto> serializer;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
     // 각 예약 요청의 결과를 전달하기 위한 Sinks (예약 ID -> Sinks.One)
     @Getter
     private final ConcurrentHashMap<String, Sinks.One<ReservationCreateResDto>> resultSinkMap =
@@ -38,16 +39,18 @@ public class CreateReservationQueueService {
 
     public CreateReservationQueueService(
             ReservationService reservationService,
-            @Qualifier("redisQueue") ReservationQueueRepository reservationQueueRepository
+            @Qualifier("redisQueue") ReservationQueueRepository reservationQueueRepository,
+            SerializerUtil<ReservationCreateReqDto> serializer
     ) {
         this.reservationService = reservationService;
         this.reservationQueue = reservationQueueRepository;
+        this.serializer = serializer;
     }
 
     // 예약 요청을 waiting queue에 저장 (ZSet에 timestamp를 score로 사용)
     public Mono<Boolean> enqueueReservation(ReservationCreateReqDto request) {
         double score = System.currentTimeMillis();
-        String json = serialize(request);
+        String json = serializer.serialize(request);
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();
         resultSinkMap.put(request.getRequestId(), sink);
         System.out.println("added Request ID: " + request.getRequestId());
@@ -58,7 +61,7 @@ public class CreateReservationQueueService {
     public Mono<Boolean> cancelReservation(String reservationId) {
         Range<Long> range = Range.of(Bound.inclusive(0L), Bound.unbounded());
         return reservationQueue.getWaitingQueueRange(range)
-                .filter(json -> Objects.equals(getIdFromJson(json), reservationId))
+                .filter(json -> Objects.equals(serializer.getFromJson(json, "id"), reservationId))
                 .flatMap(reservationQueue::removeFromWaitingQueue)
                 .hasElements();
     }
@@ -91,7 +94,7 @@ public class CreateReservationQueueService {
                 }).flatMap(json ->
                         Mono.fromCallable(() -> {
                             System.out.println("요청 역직렬화 중");
-                            return deserialize(json);
+                            return serializer.deserialize(json);
                         }).flatMap(request -> processReservation(request)
                                 .publishOn(Schedulers.boundedElastic()).flatMap(result ->
                                         reservationQueue.removeFromProcessingQueue(json).thenReturn(result)
@@ -116,32 +119,5 @@ public class CreateReservationQueueService {
     private Mono<ReservationCreateResDto> processReservation(ReservationCreateReqDto request) {
         System.out.println("요청 처리 중");
         return Mono.fromCallable(() -> reservationService.createReservation(request));
-    }
-
-    public String serialize(ReservationCreateReqDto request) {
-        try {
-            return objectMapper.writeValueAsString(request);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ReservationCreateReqDto deserialize(String json) {
-        try {
-            ReservationCreateReqDto dto = objectMapper.readValue(json, ReservationCreateReqDto.class);
-            System.out.println("deserialized requestId: " + dto.getRequestId());
-            return dto;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String getIdFromJson(String json) {
-        try {
-            JsonNode node = objectMapper.readTree(json);
-            return node.get("id").asText();
-        } catch (Exception e) {
-            return null;
-        }
     }
 }
