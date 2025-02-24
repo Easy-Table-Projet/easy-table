@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 // TODO: processQueue()의 거대한 로직 분리시키기
-// TODO: serialize 메서드들 분리시키기
 public class CreateReservationQueueService {
     private static final int MAX_PROCESSING_QUEUE_LENGTH = 100;
     private static final String WAITING_QUEUE_KEY = "reservation:waiting";

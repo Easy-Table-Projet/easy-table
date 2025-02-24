@@ -7,6 +7,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode
 @ToString
 public class ReservationCreateReqDto {
     private final String requestId = UUID.randomUUID().toString();

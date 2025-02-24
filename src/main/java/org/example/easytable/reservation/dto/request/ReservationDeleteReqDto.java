@@ -1,10 +1,12 @@
 package org.example.easytable.reservation.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 @AllArgsConstructor
-@Data
+@NoArgsConstructor
+@Getter
+@EqualsAndHashCode
+@ToString
 public class ReservationDeleteReqDto {
     private Long reservationId;
 }

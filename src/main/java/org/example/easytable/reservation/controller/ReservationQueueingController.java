@@ -23,8 +23,8 @@ public class ReservationQueueingController {
     public Mono<ReservationCreateResDto> createReservation(
             @PathVariable Long restaurantId,
             @RequestBody ReservationPostReqDto requestDto
+
     ) {
-        // TODO: AuthenticationPrincipal로 가져오도록 수정할 것
         Long memberId = AuthUtil.getId();
 
         return reservationService.submitReservation(new ReservationCreateReqDto(
@@ -58,7 +58,6 @@ public class ReservationQueueingController {
 //
 //    @GetMapping("/")
 //    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember() {
-//        // TODO: UUID 생성 부분을 유틸로 분리할 것
 //        String requestId = UUID.randomUUID().toString();
 //        CompletableFuture<List<ReservationGetResDto>> future = new CompletableFuture<>();
 //        requestFutureStore.registerFuture(requestId, future);
