@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
+// TODO: QueueService와 Redis 의존성 분리하기
+// TODO: Java Collection으로 구현된 부분에도 CreateReservationQueueService 적옹시키기
+// TODO: processQueue()의 거대한 로직 분리시키기
 public class CreateReservationQueueService {
     private static final int MAX_PROCESSING_QUEUE_LENGTH = 100;
     private static final String WAITING_QUEUE_KEY = "reservation:waiting";
