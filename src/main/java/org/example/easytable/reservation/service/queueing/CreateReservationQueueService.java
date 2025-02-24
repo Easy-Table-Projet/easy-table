@@ -1,6 +1,5 @@
 package org.example.easytable.reservation.service.queueing;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
@@ -20,16 +19,12 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-// TODO: processQueue()의 거대한 로직 분리시키기
 public class CreateReservationQueueService {
     private static final int MAX_PROCESSING_QUEUE_LENGTH = 100;
-    private static final String WAITING_QUEUE_KEY = "reservation:waiting";
-    private static final String PROCESSING_QUEUE_KEY = "reservation:processing";
 
     private final ReservationService reservationService;
     private final ReservationQueueRepository reservationQueue;
     private final SerializerUtil<ReservationCreateReqDto> serializer;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 각 예약 요청의 결과를 전달하기 위한 Sinks (예약 ID -> Sinks.One)
     @Getter
@@ -76,43 +71,66 @@ public class CreateReservationQueueService {
 
     @Scheduled(fixedDelay = 1000)
     public void processQueue() {
-        Range<Long> range = Range.of(Bound.inclusive(0L), Bound.inclusive(0L));
-        reservationQueue.getWaitingQueueRange(range).flatMap(json ->
-                reservationQueue.removeFromWaitingQueue(json).filter(removed -> removed > 0).flatMap(removed ->
-                        reservationQueue.getProcessingQueueSize().flatMap(size -> {
-                            if (size < MAX_PROCESSING_QUEUE_LENGTH) {
-                                double score = System.currentTimeMillis();
-                                return reservationQueue.addToProcessingQueue(json, score).thenReturn(json);
-                            } else {
-                                // PROCESSING_QUEUE가 최대 크기에 도달한 경우 Mono.empty()를 반환하여 추가하지 않음
-                                return Mono.empty();
-                            }
-                        })
-                )).onErrorContinue((throwable, obj) -> {
-                    System.err.println("Error processing item in initial phase: " + obj + ", error: " + throwable.getMessage());
-                }).flatMap(json ->
-                        Mono.fromCallable(() -> {
-                            System.out.println("요청 역직렬화 중");
-                            return serializer.deserialize(json);
-                        }).flatMap(request -> processReservation(request)
-                                .publishOn(Schedulers.boundedElastic()).flatMap(result ->
-                                        reservationQueue.removeFromProcessingQueue(json).thenReturn(result)
-                                ))
-                                .onErrorResume(e -> {
-                                    System.out.println("Deserialization/processing error for json: " + json + ", error: " + e.getMessage());
-                                    return reservationQueue.removeFromProcessingQueue(json).then(Mono.empty());
-                                })
-                )
-                .subscribe(result -> {
-                    System.out.println("요청 처리 결과 반환 중\nresult: " + result);
-                    Sinks.One<ReservationCreateResDto> sink = resultSinkMap.remove(result.requestId());
-                    if (sink == null) {
-                        throw new IllegalStateException("Sink not found");
+        Range<Long> waitingRange = Range.of(Bound.inclusive(0L), Bound.inclusive(0L));
+        reservationQueue.getWaitingQueueRange(waitingRange)
+                .flatMap(this::moveToProcessingQueue)
+                .onErrorContinue((throwable, obj) ->
+                    System.err.println(
+                        "Error processing item in initial phase: " + obj + ", error: " + throwable.getMessage()))
+                .flatMap(this::deserializeAndProcess)
+                .subscribe(
+                    this::handleResult,
+                    error -> System.err.println("Error in processQueue: " + error.getMessage())
+                );
+    }
+
+    /**
+     * waiting queue에서 가져온 JSON 아이템을 processing queue로 옮기는 로직.
+     */
+    private Mono<String> moveToProcessingQueue(String json) {
+        return reservationQueue.removeFromWaitingQueue(json)
+            .filter(removed -> removed > 0)
+            .flatMap(removed ->
+                reservationQueue.getProcessingQueueSize().flatMap(size -> {
+                    if (size < MAX_PROCESSING_QUEUE_LENGTH) {
+                        double score = System.currentTimeMillis();
+                        return reservationQueue.addToProcessingQueue(json, score).thenReturn(json);
+                    } else {
+                        // processing queue가 최대 크기에 도달한 경우 Mono.empty() 반환
+                        return Mono.empty();
                     }
-                    sink.tryEmitValue(result);
-                }, error -> {
-                    System.err.println("Error in processQueue: " + error.getMessage());
-                });
+                })
+            );
+    }
+
+    /**
+     * processing queue에 있는 JSON을 역직렬화하고 예약 처리를 진행하는 로직.
+     */
+    private Mono<ReservationCreateResDto> deserializeAndProcess(String json) {
+        return Mono.fromCallable(() -> {
+            System.out.println("요청 역직렬화 중");
+            return serializer.deserialize(json);
+        }).flatMap(request ->
+                processReservation(request)
+                    .publishOn(Schedulers.boundedElastic())
+                    .flatMap(result ->
+                        reservationQueue.removeFromProcessingQueue(json).thenReturn(result))
+        ).onErrorResume(e -> {
+            System.out.println("Deserialization/processing error for json: " + json + ", error: " + e.getMessage());
+            return reservationQueue.removeFromProcessingQueue(json).then(Mono.empty());
+        });
+    }
+
+    /**
+     * 처리 결과를 해당 sink에 전달하는 로직.
+     */
+    private void handleResult(ReservationCreateResDto result) {
+        System.out.println("요청 처리 결과 반환 중\nresult: " + result);
+        Sinks.One<ReservationCreateResDto> sink = resultSinkMap.remove(result.requestId());
+        if (sink == null) {
+            throw new IllegalStateException("Sink not found");
+        }
+        sink.tryEmitValue(result);
     }
 
     private Mono<ReservationCreateResDto> processReservation(ReservationCreateReqDto request) {
