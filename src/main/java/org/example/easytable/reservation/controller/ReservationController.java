@@ -7,8 +7,10 @@ import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.service.ReservationService;
+import org.example.easytable.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,10 +28,11 @@ public class ReservationController {
 
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long restaurantId,
             @RequestBody ReservationCreateReqDto requestDto
     ) {
-        Long memberId = AuthUtil.getId();
+        Long memberId = userDetails.getId();
 
         reservationService.createReservation(restaurantId, memberId, requestDto);
 
@@ -48,18 +51,22 @@ public class ReservationController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember() {
-        List<ReservationGetResDto> reservation = reservationService.getReservationByMember();
-
-        return new ResponseEntity<>(reservation, HttpStatus.OK);
+    public ResponseEntity<List<ReservationGetResDto>> getReservationByMember(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Long memberId = userDetails.getId();
+        List<ReservationGetResDto> reservations = reservationService.getReservationByMember(memberId);
+        return ResponseEntity.ok(reservations);
     }
 
+    // 🔹 현재 로그인한 회원의 예약 삭제
     @DeleteMapping("/{reservationId}")
-    public void deleteReservation(
-            @PathVariable("reservationId") Long reservationId
+    public ResponseEntity<Void> deleteReservation(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long reservationId
     ) {
-
-        reservationService.deleteReservation(reservationId);
-
+        Long memberId = userDetails.getId();
+        reservationService.deleteReservation(memberId, reservationId);
+        return ResponseEntity.noContent().build(); // HTTP 204 응답 (성공, 내용 없음)
     }
 }
