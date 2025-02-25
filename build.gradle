@@ -43,12 +43,12 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'io.projectreactor:reactor-test'
 
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
     implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
-
 
     // bcrypt
     implementation 'at.favre.lib:bcrypt:0.10.2'
@@ -58,8 +58,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-
+    // Redis
     implementation 'org.redisson:redisson:3.44.0'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
     // jpa가 생성한 쿼리에서 실제로 사용된 ?를 보여줌
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
