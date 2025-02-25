@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query("""
             SELECT r
@@ -20,4 +22,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             @Param("restaurantName") String restaurantName,
             @Param("category") RestaurantCategory enumCategory,
             Pageable pageable);
+
+    // 비관적 lock을 적용하려는 경우에 어노테이션을 활성화시킬 것
+    // @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Restaurant> findFirstById(Long id);
 }
