@@ -44,6 +44,8 @@ public class Reservation extends BaseEntity {
     public void softDelete() {
         this.isDeleted = true;
     }
+
+    public void confirmReservation() { this.status = ReservationStatus.CONFIRMED; }
 }
 
 

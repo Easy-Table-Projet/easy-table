@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.repository.MemberRepository;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
@@ -69,7 +69,7 @@ class ReservationServiceTest {
         LocalDateTime reservationTime = LocalDateTime.of(2024, 2, 14, 10, 0);
 
         // 예약 요청 DTO(데이터 전송 객체) 생성
-        ReservationCreateReqDto reservationCreateReqDto = new ReservationCreateReqDto(reservationTime);
+        ReservationPostReqDto reservationCreateReqDto = new ReservationPostReqDto(reservationTime);
 
         // 회원(Member) 객체 생성 (빌더 패턴 사용)
         Member member = Member.builder()

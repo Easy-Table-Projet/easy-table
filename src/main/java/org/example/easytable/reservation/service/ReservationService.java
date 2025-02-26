@@ -1,16 +1,14 @@
 package org.example.easytable.reservation.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.aop.annotation.LockKey;
 import org.example.easytable.common.aop.annotation.RedissonLock;
-import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.repository.MemberRepository;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
 import org.example.easytable.reservation.entity.Reservation;
@@ -19,6 +17,9 @@ import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class ReservationService {
 
     @RedissonLock(prefix = "restaurant:")
     @Transactional
-    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationCreateReqDto reservationCreateReqDto) {
+    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
@@ -43,7 +44,7 @@ public class ReservationService {
         Reservation newReservation = Reservation.builder()
                 .member(member)
                 .restaurant(restaurant)
-                .reservationTime(reservationCreateReqDto.reservationTime())
+                .reservationTime(reservationPostReqDto.reservationTime())
                 .build();
 
         reservationRepository.save(newReservation);
@@ -51,6 +52,33 @@ public class ReservationService {
         return ReservationCreateResDto.from(newReservation);
     }
 
+    // TODO: @RedissonLock의 @LockKey 의존도를 낮춰 @LockKey를 사용하지 않고도 @RedissonLock를 적용할 수 있도록 수정할 것
+    @Transactional
+    public ReservationCreateResDto createReservation(ReservationCreateReqDto dto) {
+        Long memberId = dto.getMemberId();
+        Long restaurantId = dto.getRestaurantId();
+        ReservationPostReqDto reservationPostReqDto = dto.getReservationPostReqDto();
+
+        System.out.println("Creating reservation with memberId: " + memberId);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
+
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
+
+        restaurant.decreaseRemainingTableCount();
+
+        Reservation newReservation = Reservation.builder()
+                .member(member)
+                .restaurant(restaurant)
+                .reservationTime(reservationPostReqDto.reservationTime())
+                .build();
+
+        reservationRepository.save(newReservation);
+
+        return ReservationCreateResDto.of(newReservation, dto.getRequestId());
+    }
 
     public List<ReservationGetResDto> getReservationByRestaurant(Long restaurantId) {
 
