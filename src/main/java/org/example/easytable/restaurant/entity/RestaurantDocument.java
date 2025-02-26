@@ -7,12 +7,14 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @Document(indexName = "restaurants")
 public class RestaurantDocument {
     @Id
-    private Long id;
+    private String id;
 
     @Field(type = FieldType.Text)
     private String name;
@@ -38,7 +40,7 @@ public class RestaurantDocument {
     @Builder
     public static RestaurantDocument from(Restaurant restaurant) {
         return RestaurantDocument.builder()
-                .id(restaurant.getId())
+                .id(LocalDateTime.now()+restaurant.getName())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .maxTableCount(restaurant.getMaxTableCount())

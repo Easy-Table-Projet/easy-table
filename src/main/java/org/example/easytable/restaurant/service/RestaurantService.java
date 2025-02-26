@@ -48,8 +48,8 @@ public class RestaurantService {
                 .build();
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-        RestaurantDocument document = RestaurantDocument.from(savedRestaurant);
-        elasticSearchRepository.save(document);
+//        RestaurantDocument document = RestaurantDocument.from(savedRestaurant);
+//        elasticSearchRepository.save(document);
         return RestaurantResDto.from(savedRestaurant);
     }
 

@@ -22,12 +22,19 @@ public class RestaurantController {
     private final RestaurantElasticSearchService elasticSearchService;
     private final RestaurantCreateDummyDataService restaurantCreateDummyDataService;
 
-    @PostMapping//todo: 관리자 권한 설정 필요
+    @PostMapping
     public ResponseEntity<RestaurantResDto> createRestaurant(
             @RequestBody RestaurantCreateReqDto restaurantCreateReqDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(restaurantService.createRestaurant(restaurantCreateReqDto));
+    }
+    @PostMapping("/es")
+    public ResponseEntity<RestaurantResDto> createRestaurantEs(
+            @RequestBody RestaurantCreateReqDto restaurantCreateReqDto) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(elasticSearchService.createRestaurantEs(restaurantCreateReqDto));
     }
 
     @GetMapping("/{restaurantId}")
