@@ -22,6 +22,9 @@
 # 1. OpenJDK 기반의 JDK 이미지 사용
 FROM --platform=linux/amd64 openjdk:17-jdk-slim
 
+# curl 설치 (Debian 기반)
+RUN apt-get update && apt-get install -y curl
+
 # 2. JAR 파일을 컨테이너 내부로 복사
 ARG JAR_FILE=build/libs/easy-table-0.0.1-SNAPSHOT.jar
 COPY ${JAR_FILE} app.jar
