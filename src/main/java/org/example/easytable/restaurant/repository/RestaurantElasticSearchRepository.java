@@ -7,18 +7,18 @@ import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface RestaurantElasticSearchRepository extends ElasticsearchRepository<RestaurantDocument, Long> {
-    @Query("""
-    {
-      "bool": {
-        "must": [
-          { "match": { "name": "?0" } },
-          { "term": { "category": "?1" } }
-        ],
-        "filter": [
-          { "term": { "isDeleted": false } }
-        ]
-      }
-    }
-    """)
-    Page<RestaurantDocument> searchByFilters(String name, String category, Pageable pageable);
+//    @Query("""
+//    {
+//      "bool": {
+//        "must": [
+//          { "match": { "name": "?0" } },
+//          { "term": { "category": "?1" } }
+//        ],
+//        "filter": [
+//          { "term": { "isDeleted": false } }
+//        ]
+//      }
+//    }
+//    """)
+//    Page<RestaurantDocument> searchByFilters(String name, String category, Pageable pageable);
 }

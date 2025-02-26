@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.easytable.restaurant.dto.request.RestaurantCreateReqDto;
 import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
+import org.example.easytable.restaurant.service.RestaurantCreateDummyDataService;
 import org.example.easytable.restaurant.service.RestaurantElasticSearchService;
 import org.example.easytable.restaurant.service.RestaurantService;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import java.util.List;
 public class RestaurantController {
     private final RestaurantService restaurantService;
     private final RestaurantElasticSearchService elasticSearchService;
+    private final RestaurantCreateDummyDataService restaurantCreateDummyDataService;
 
     @PostMapping//todo: 관리자 권한 설정 필요
     public ResponseEntity<RestaurantResDto> createRestaurant(
@@ -70,4 +72,9 @@ public class RestaurantController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/dummy")
+    public ResponseEntity<Void> getRestaurantById(){
+        restaurantCreateDummyDataService.bulkInsertRestaurants();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

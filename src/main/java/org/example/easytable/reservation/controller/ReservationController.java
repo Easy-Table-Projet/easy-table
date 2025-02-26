@@ -53,8 +53,10 @@ public class ReservationController {
     public void deleteReservation(
             @PathVariable("reservationId") Long reservationId
     ) {
-
         reservationService.deleteReservation(reservationId);
-
+    }
+    @PostMapping("/dummy")
+    public void deleteReservation(){
+        reservationService.bulkInsertReservations(100000);
     }
 }

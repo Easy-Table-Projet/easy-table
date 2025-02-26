@@ -65,12 +65,8 @@ public class RestaurantService {
             String name,
             String category,
             Pageable pageable) {
-        RestaurantCategory enumCategory = (category == null || category.isEmpty())
-                ? null
-                : RestaurantCategory.valueOf(category);
-
         Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitleAndCategory(
-                name, enumCategory, pageable);
+                name, category, pageable);
 
         return restaurants.map(RestaurantResDto::from);
     }
@@ -103,7 +99,6 @@ public class RestaurantService {
     public void deleteRestaurant(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
-
         validateOwnership(restaurant);
         elasticSearchRepository.deleteById(restaurant.getId());
         restaurant.softDelete();

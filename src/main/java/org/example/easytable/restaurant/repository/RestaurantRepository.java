@@ -14,13 +14,13 @@ import java.util.List;
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query(value = """
         SELECT * FROM restaurant r
-        WHERE (:restaurantName IS NULL OR MATCH(r.name) AGAINST(:restaurantName IN NATURAL LANGUAGE MODE))
-        AND (:category IS NULL OR r.cartegory = :category)
+        WHERE (:name IS NULL OR r.name LIKE %:name%)
+        AND (:category IS NULL OR r.category = :category)
         AND r.is_deleted = FALSE
         """, nativeQuery = true)
     Page<Restaurant> findAllRestaurantByTitleAndCategory(
-            @Param("restaurantName") String restaurantName,
-            @Param("category") RestaurantCategory enumCategory,
+            @Param("name") String name,
+            @Param("category") String category,
             Pageable pageable);
 
     @Query("""
