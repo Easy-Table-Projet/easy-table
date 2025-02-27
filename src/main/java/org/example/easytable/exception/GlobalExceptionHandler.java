@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -37,6 +38,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException e) {
         ErrorResponseDto errorResponse = ErrorResponseDto.of(HttpStatus.FORBIDDEN, "접근이 거부되었습니다.");
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(TimeoutException.class)
+    public ResponseEntity<ErrorResponseDto> handleTimeoutException(TimeoutException e) {
+        ErrorResponseDto errorResponse = ErrorResponseDto.of(HttpStatus.REQUEST_TIMEOUT, "요청 처리 시간이 초과되었습니다.");
+        return new ResponseEntity<>(errorResponse, HttpStatus.REQUEST_TIMEOUT);
     }
 
     @ExceptionHandler(Exception.class)

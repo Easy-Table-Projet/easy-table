@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Component
 @RequiredArgsConstructor
 public class SerializerUtil<T> {
@@ -24,6 +26,14 @@ public class SerializerUtil<T> {
         try {
             return objectMapper.readValue(json, type);
         } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public T deserialize(byte[] bytes) {
+        try {
+            return objectMapper.readValue(bytes, type);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

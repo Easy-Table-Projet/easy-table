@@ -1,15 +1,14 @@
-package org.example.easytable.reservation.service.queueing;
+package org.example.easytable.reservation.service.legacy;
 
 import lombok.Getter;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
-import org.example.easytable.reservation.repository.ReservationQueueRepository;
+import org.example.easytable.reservation.repository.legacy.ReservationQueueRepository;
 import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Range.Bound;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -28,7 +27,7 @@ public class CreateReservationQueueService {
 
     // 각 예약 요청의 결과를 전달하기 위한 Sinks (예약 ID -> Sinks.One)
     @Getter
-    private final ConcurrentHashMap<String, Sinks.One<ReservationCreateResDto>> resultSinkMap =
+    private final ConcurrentHashMap<Long, Sinks.One<ReservationCreateResDto>> resultSinkMap =
             new ConcurrentHashMap<>();
 
     public CreateReservationQueueService(
@@ -61,7 +60,7 @@ public class CreateReservationQueueService {
     }
 
     // 예약 처리 결과를 기다리는 메서드 (예약 ID에 대응되는 Sinks를 반환)
-    public Mono<ReservationCreateResDto> waitForProcessingResult(String reservationId) {
+    public Mono<ReservationCreateResDto> waitForProcessingResult(Long reservationId) {
         Sinks.One<ReservationCreateResDto> sink = resultSinkMap.get(reservationId);
         if (sink != null) {
             return sink.asMono();
@@ -69,7 +68,7 @@ public class CreateReservationQueueService {
         return Mono.empty();
     }
 
-    @Scheduled(fixedDelay = 1000)
+    //@Scheduled(fixedDelay = 1000)
     public void processQueue() {
         Range<Long> waitingRange = Range.of(
                 Bound.inclusive(0L), Bound.inclusive((long) MAX_PROCESSING_QUEUE_LENGTH - 1));

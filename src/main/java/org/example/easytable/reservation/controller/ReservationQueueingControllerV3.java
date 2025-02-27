@@ -5,26 +5,26 @@ import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
-import org.example.easytable.reservation.service.legacy.ReservationServiceV2;
+import org.example.easytable.reservation.service.queueing.ReservationServiceV3;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v2/reservations")
+@RequestMapping("/api/v3/reservations")
 @RequiredArgsConstructor
-public class ReservationQueueingController {
-    private final ReservationServiceV2 reservationService;
+public class ReservationQueueingControllerV3 {
+    private final ReservationServiceV3 reservationService;
 
     @PostMapping("/{restaurantId}")
-    public Mono<ReservationCreateResDto> createReservation(
+    public ResponseEntity<ReservationCreateResDto> createReservation(
             @PathVariable Long restaurantId,
             @RequestBody ReservationPostReqDto requestDto
 
-    ) {
+    ) throws Exception {
         Long memberId = AuthUtil.getId();
 
-        return reservationService.submitReservation(new ReservationCreateReqDto(
+        return ResponseEntity.ok(reservationService.queueRequest(new ReservationCreateReqDto(
                 restaurantId, memberId, requestDto
-        ));
+        )));
     }
 }
