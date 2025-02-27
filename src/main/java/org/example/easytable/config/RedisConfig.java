@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -24,9 +25,13 @@ public class RedisConfig {
     private static final String TOPIC_NAME = "reservation:create";
 
     @Value("${spring.data.redis.host:localhost}")
-    private String redisHost;
+    private String host;
     @Value("${spring.data.redis.port:6379}")
-    private int redisPort;
+    private int port;
+    @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
+    private String password;
+    @Value("${spring.data.redis.username:default}")
+    private String username;
 
     @Bean
     ChannelTopic topic() {
@@ -35,7 +40,17 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory lettuceConnectionFactory() {
-        return new LettuceConnectionFactory(redisHost, redisPort);
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+
+        if (password != null && !password.trim().isEmpty()) {
+            config.setPassword(password);
+        }
+
+        if (username != null && !username.trim().isEmpty()) {
+            config.setUsername(username);
+        }
+
+        return new LettuceConnectionFactory(config);
     }
 
     @Bean

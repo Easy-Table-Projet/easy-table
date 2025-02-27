@@ -1,5 +1,6 @@
 package org.example.easytable.reservation.service.queueing;
 
+import io.lettuce.core.RedisBusyException;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
@@ -18,6 +19,8 @@ import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.Subscription;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -43,8 +46,17 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
 
     @Override
     public void afterPropertiesSet() {
-        redisTemplate.opsForStream().createGroup(topic.getTopic(), ReadOffset.from("0"), GROUP_NAME);
-        redisTemplate.opsForStream().trim(topic.getTopic(), maxStreamLength);
+        String groupName = topic.getTopic() + ":" + UUID.randomUUID();
+
+        while (true) {
+            try {
+                redisTemplate.opsForStream().createGroup(groupName, ReadOffset.from("0"), GROUP_NAME);
+                break;
+            } catch (RedisBusyException e) {
+                groupName = topic.getTopic() + ":" + UUID.randomUUID();
+            }
+        }
+        redisTemplate.opsForStream().trim(groupName, maxStreamLength);
 
         this.subscription = listenerContainer.receive(
                 Consumer.from(GROUP_NAME, CONSUMER_NAME),
