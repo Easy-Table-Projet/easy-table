@@ -33,8 +33,7 @@ public class RestaurantService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public RestaurantResDto createRestaurant(RestaurantCreateReqDto restaurantCreateReqDto) {
-        Long memberId = AuthUtil.getId();
+    public RestaurantResDto createRestaurant(Long memberId, RestaurantCreateReqDto restaurantCreateReqDto) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
