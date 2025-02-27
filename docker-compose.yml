@@ -17,21 +17,21 @@ services:
     ports:
       - "${REDIS_PORT}:6379"
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
-    ports:
-      - "${ELASTICSEARCH_PORT}:9200"
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.0
-    container_name: kibana
-    depends_on:
-      - elasticsearch
-    ports:
-      - "${KIBANA_PORT}:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT}
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+#    container_name: elasticsearch
+#    environment:
+#      - discovery.type=single-node
+#      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+#    ports:
+#      - "${ELASTICSEARCH_PORT}:9200"
+#
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:7.17.0
+#    container_name: kibana
+#    depends_on:
+#      - elasticsearch
+#    ports:
+#      - "${KIBANA_PORT}:5601"
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT}
