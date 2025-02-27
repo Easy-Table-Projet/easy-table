@@ -1,9 +1,7 @@
 package org.example.easytable.restaurant.entity;
 
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,9 +11,18 @@ import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.reservation.entity.Reservation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "restaurant",
+        indexes = {
+                @Index(name = "idx_category", columnList = "category"),
+                @Index(name = "idx_is_deleted", columnList = "isDeleted")
+        })
 public class Restaurant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
