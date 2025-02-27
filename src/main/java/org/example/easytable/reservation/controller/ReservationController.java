@@ -63,4 +63,9 @@ public class ReservationController {
         reservationService.deleteReservation(memberId, reservationId);
         return ResponseEntity.noContent().build(); // HTTP 204 응답 (성공, 내용 없음)
     }
+  
+    @PostMapping("/dummy")
+    public void deleteReservation(){
+        reservationService.bulkInsertReservations(100000);
+    }
 }

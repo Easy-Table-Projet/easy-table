@@ -11,18 +11,26 @@ import org.example.easytable.restaurant.dto.request.RestaurantNameUpdateReqDto;
 import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.entity.RestaurantCategory;
+import org.example.easytable.restaurant.entity.RestaurantDocument;
+import org.example.easytable.restaurant.repository.RestaurantElasticSearchRepository;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
+    private final RestaurantElasticSearchRepository elasticSearchRepository;
+    private static final String CACHE_KEY = "top100Restaurants";
     private final MemberRepository memberRepository;
-
 
     @Transactional
     public RestaurantResDto createRestaurant(Long memberId, RestaurantCreateReqDto restaurantCreateReqDto) {
@@ -39,6 +47,8 @@ public class RestaurantService {
                 .build();
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+//        RestaurantDocument document = RestaurantDocument.from(savedRestaurant);
+//        elasticSearchRepository.save(document);
         return RestaurantResDto.from(savedRestaurant);
     }
 
@@ -54,26 +64,33 @@ public class RestaurantService {
             String name,
             String category,
             Pageable pageable) {
-
-        RestaurantCategory enumCategory = (category == null || category.isEmpty())
-                ? null
-                : RestaurantCategory.valueOf(category);
-
         Page<Restaurant> restaurants = restaurantRepository.findAllRestaurantByTitleAndCategory(
-                name, enumCategory, pageable);
+                name, category, pageable);
 
         return restaurants.map(RestaurantResDto::from);
     }
 
+    @Cacheable(value = CACHE_KEY)
+    @Transactional(readOnly = true)
+    public List<RestaurantResDto> findTop100RestaurantList() {
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        List<Restaurant> restaurants = restaurantRepository.findTop100RestaurantList(oneMonthAgo);
+        return restaurants.stream()
+                .map(RestaurantResDto::from)
+                .collect(Collectors.toList());
+    }
 
     @Transactional
-    public RestaurantResDto updateRestaurantName(Long restaurantId, RestaurantNameUpdateReqDto restaunrantNameUpdateReqDto) {
+    public RestaurantResDto updateRestaurantName(Long restaurantId,
+                                                 RestaurantNameUpdateReqDto restaunrantNameUpdateReqDto) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
 
         validateOwnership(restaurant);
 
         restaurant.updateName(restaunrantNameUpdateReqDto.name());
+        RestaurantDocument document = RestaurantDocument.from(restaurant);
+        elasticSearchRepository.save(document);
         return RestaurantResDto.from(restaurant);
     }
 
@@ -81,9 +98,8 @@ public class RestaurantService {
     public void deleteRestaurant(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
-
         validateOwnership(restaurant);
-
+        elasticSearchRepository.deleteById(restaurant.getId());
         restaurant.softDelete();
     }
 
