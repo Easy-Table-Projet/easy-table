@@ -3,7 +3,6 @@ package org.example.easytable.reservation.service;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.aop.annotation.LockKey;
 import org.example.easytable.common.aop.annotation.RedissonLock;
-import org.example.easytable.common.utils.AuthUtil;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
@@ -33,8 +32,6 @@ public class ReservationService {
     @RedissonLock(prefix = "restaurant:")
     @Transactional
     public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto) {
-
-        System.out.println("Creating reservation with memberId: " + memberId);
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
@@ -97,8 +94,10 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    public List<ReservationGetResDto> getReservationByMember() {
-        Long memberId = AuthUtil.getId();
+    public List<ReservationGetResDto> getReservationByMember(Long memberId) {
+        if (!memberRepository.existsById(memberId)) {
+            throw CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다");
+        }
 
         // TODO: N+1 개선 필요 - Member, Restaurant 조회 시 발생
         return reservationRepository.findByMemberId(memberId).stream()
@@ -107,8 +106,11 @@ public class ReservationService {
     }
 
     @Transactional
-    public void deleteReservation(Long reservationId) {
-        Long memberId = AuthUtil.getId();
+    public void deleteReservation(Long memberId, Long reservationId) {
+
+        if (!memberRepository.existsById(memberId)) {
+            throw CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다");
+        }
 
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 예약입니다"));

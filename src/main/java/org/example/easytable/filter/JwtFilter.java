@@ -1,11 +1,13 @@
 package org.example.easytable.filter;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.utils.JwtUtil;
+import org.example.easytable.security.UserDetailsImpl;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,7 +23,6 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 	private final JwtUtil jwtUtil;
-	private final UserDetailsService userDetailsService;
 
 	@Override
 	protected void doFilterInternal(
@@ -29,38 +30,42 @@ public class JwtFilter extends OncePerRequestFilter {
 			@NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain
 	) throws ServletException, IOException {
-		String authorizationHeader = request.getHeader("Authorization");
-
-		if (!isValidAuthorizationHeader(authorizationHeader)) {
-			filterChain.doFilter(request, response);
-			return;
-		}
-
-		String jwt = authorizationHeader.substring(7);
-
 		try {
-			String email = jwtUtil.extractEmail(jwt);
-			UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-			setAuthentication(request, userDetails);
-		} catch (Exception e) {
-			filterChain.doFilter(request, response);
-			return;
+			String token = extractToken(request);
+			if (token != null) {
+				Claims claims = jwtUtil.getClaims(token);
+				setAuthentication(createUserDetails(claims), request);
+			}
+		} catch (Exception ignored) {
+			// 토큰이 유효하지 않은 경우 인증 정보를 설정하지 않음
 		}
 
 		filterChain.doFilter(request, response);
 	}
 
-	private boolean isValidAuthorizationHeader(String header) {
-		return header != null && header.startsWith("Bearer ");
+	private String extractToken(HttpServletRequest request) {
+		String header = request.getHeader("Authorization");
+		if (header != null && header.startsWith("Bearer ")) {
+			return header.substring(7);
+		}
+		return null;
 	}
 
-	private void setAuthentication(HttpServletRequest request, UserDetails userDetails) {
-		UsernamePasswordAuthenticationToken authentication =
-				new UsernamePasswordAuthenticationToken(
-						userDetails,
-						null,
-						userDetails.getAuthorities()
-				);
+	private UserDetails createUserDetails(Claims claims) {
+		return new UserDetailsImpl(
+				claims.get("id", Long.class),
+				claims.getSubject(), // email
+				"",  // 비밀번호는 불필요
+				claims.get("memberType", String.class)
+		);
+	}
+
+	private void setAuthentication(UserDetails userDetails, HttpServletRequest request) {
+		var authentication = new UsernamePasswordAuthenticationToken(
+				userDetails,
+				null,
+				userDetails.getAuthorities()
+		);
 		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 	}
