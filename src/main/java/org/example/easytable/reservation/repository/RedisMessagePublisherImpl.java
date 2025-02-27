@@ -11,12 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import static org.springframework.data.redis.connection.RedisStreamCommands.XAddOptions;
 
 @Repository
 @RequiredArgsConstructor
-public class RedisQueuePublisher implements QueuePublisher {
+public class RedisMessagePublisherImpl implements MessagePublisher {
     private static final int MAX_ATTEMPTS = 5;
     private static final long RETRY_DELAY_MS = 500;
 
@@ -30,7 +31,7 @@ public class RedisQueuePublisher implements QueuePublisher {
     private long maxStreamLength;
 
     @Override
-    public void publish(ReservationCreateReqDto dto) {
+    public void publish(ReservationCreateReqDto dto) throws TimeoutException {
         int attempt = 0;
         while (attempt < MAX_ATTEMPTS) {
             try {
@@ -42,7 +43,7 @@ public class RedisQueuePublisher implements QueuePublisher {
             }
         }
 
-        throw new RuntimeException("스트림이 가득 차서 요청을 처리할 수 없습니다.");
+        throw new TimeoutException("");
     }
 
     private void publishToStream(ReservationCreateReqDto dto) {

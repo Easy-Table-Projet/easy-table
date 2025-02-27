@@ -3,7 +3,7 @@ package org.example.easytable.reservation.service.queueing;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
-import org.example.easytable.reservation.repository.QueuePublisher;
+import org.example.easytable.reservation.repository.MessagePublisher;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
 @Service
 @RequiredArgsConstructor
 public class ReservationServiceV3 {
-    private final QueuePublisher publisher;
+    private final MessagePublisher publisher;
     private final SinksRegistry sinkRegistry;
 
     public ReservationCreateResDto queueRequest(ReservationCreateReqDto dto) throws Exception {
