@@ -28,7 +28,7 @@ public record RestaurantResDto(
     }
     public static RestaurantResDto from(RestaurantDocument restaurant) {
         return RestaurantResDto.builder()
-                .id(restaurant.getId())
+                .id(Long.parseLong(restaurant.getId()))
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .maxTableCount(restaurant.getMaxTableCount())

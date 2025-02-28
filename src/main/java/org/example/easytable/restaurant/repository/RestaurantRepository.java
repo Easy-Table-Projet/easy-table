@@ -1,10 +1,11 @@
 package org.example.easytable.restaurant.repository;
 
+import jakarta.persistence.LockModeType;
 import org.example.easytable.restaurant.entity.Restaurant;
-import org.example.easytable.restaurant.entity.RestaurantCategory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -34,7 +35,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> findTop100RestaurantList(
             @Param("oneMonthAgo") LocalDateTime oneMonthAgo);
 
-    // 비관적 lock을 적용하려는 경우에 어노테이션을 활성화시킬 것
-    // @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Restaurant> findFirstById(Long id);
 }
