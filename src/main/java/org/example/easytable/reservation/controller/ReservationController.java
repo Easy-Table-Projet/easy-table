@@ -21,7 +21,7 @@ public class ReservationController {
 
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
-            @PathVariable Long restaurantId,
+            @PathVariable("restaurantId") Long restaurantId,
             @RequestBody ReservationPostReqDto requestDto
     ) {
         Long memberId = AuthUtil.getId();

@@ -1,5 +1,6 @@
 package org.example.easytable.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.exception.dto.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
@@ -48,6 +50,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneralException(Exception ex, WebRequest request) {
+        log.error("error: {}", ex.getMessage());
         ErrorResponseDto errorResponse = ErrorResponseDto.of(HttpStatus.INTERNAL_SERVER_ERROR, "예기치 않은 오류가 발생했습니다.");
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

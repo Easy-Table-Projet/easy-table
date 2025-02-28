@@ -24,7 +24,7 @@ public class AuthService {
 
     public String authenticate(LoginReqDto loginReqDto) {
         // 사용자 정보 로드
-        Member member = memberRepository.findByEmail(loginReqDto.getEmail())
+        Member member = memberRepository.findByEmail(loginReqDto.email())
                 .orElseThrow(() -> CustomException.of(ErrorCode.UNAUTHORIZED, "이메일 또는 비밀번호가 잘못되었습니다."));
 
         // 탈퇴한 회원 검증
@@ -33,7 +33,7 @@ public class AuthService {
         }
 
         // 비밀번호 검증
-        if (!passwordEncoder.matches(loginReqDto.getPassword(), member.getPassword())) {
+        if (!passwordEncoder.matches(loginReqDto.password(), member.getPassword())) {
             throw CustomException.of(ErrorCode.UNAUTHORIZED, "이메일 또는 비밀번호가 잘못되었습니다.");
         }
 
@@ -43,30 +43,30 @@ public class AuthService {
 
     public Member registerMember(RegisterReqDto registerReqDto) {
         // Role 값 검증 및 변환
-        if (!MemberType.isValid(registerReqDto.getMemberType())) {
+        if (!MemberType.isValid(registerReqDto.memberType())) {
             throw CustomException.of(
                     ErrorCode.BAD_REQUEST,
                     String.format("Invalid member type: '%s'. Allowed values are: %s",
-                            registerReqDto.getMemberType(),
+                            registerReqDto.memberType(),
                             Arrays.toString(MemberType.values()))
             );
         }
-        MemberType memberType = MemberType.valueOf(registerReqDto.getMemberType().toUpperCase());
+        MemberType memberType = MemberType.valueOf(registerReqDto.memberType().toUpperCase());
 
         // 이메일 중복 확인
-        if (memberRepository.existsByEmail(registerReqDto.getEmail())) {
+        if (memberRepository.existsByEmail(registerReqDto.email())) {
             throw CustomException.of(ErrorCode.CONFLICT,
-                    "이미 사용 중인 이메일입니다: " + registerReqDto.getEmail());
+                    "이미 사용 중인 이메일입니다: " + registerReqDto.email());
         }
 
         // 이메일에서 @ 이전의 값 추출
-        String name = registerReqDto.getEmail().split("@")[0];
+        String name = registerReqDto.email().split("@")[0];
 
         // 사용자 생성 및 저장
         Member user = Member.builder()
                 .name(name) // 이메일의 @ 앞 부분을 이름으로 사용
-                .email(registerReqDto.getEmail())
-                .password(passwordEncoder.encode(registerReqDto.getPassword()))
+                .email(registerReqDto.email())
+                .password(passwordEncoder.encode(registerReqDto.password()))
                 .memberType(memberType)
                 .build();
 

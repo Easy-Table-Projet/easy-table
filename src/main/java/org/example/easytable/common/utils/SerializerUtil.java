@@ -3,15 +3,14 @@ package org.example.easytable.common.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
 public class SerializerUtil<T> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private final Class<T> type;
 
     public String serialize(T request) {
@@ -26,14 +25,6 @@ public class SerializerUtil<T> {
         try {
             return objectMapper.readValue(json, type);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public T deserialize(byte[] bytes) {
-        try {
-            return objectMapper.readValue(bytes, type);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

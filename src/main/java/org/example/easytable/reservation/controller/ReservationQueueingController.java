@@ -17,7 +17,7 @@ public class ReservationQueueingController {
 
     @PostMapping("/{restaurantId}")
     public Mono<ReservationCreateResDto> createReservation(
-            @PathVariable Long restaurantId,
+            @PathVariable("restaurantId") Long restaurantId,
             @RequestBody ReservationPostReqDto requestDto
 
     ) {

@@ -17,7 +17,7 @@ public class ReservationQueueingControllerV3 {
 
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
-            @PathVariable Long restaurantId,
+            @PathVariable("restaurantId") Long restaurantId,
             @RequestBody ReservationPostReqDto requestDto
 
     ) throws Exception {

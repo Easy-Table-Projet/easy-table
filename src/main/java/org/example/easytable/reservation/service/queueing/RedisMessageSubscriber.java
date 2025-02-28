@@ -1,7 +1,7 @@
 package org.example.easytable.reservation.service.queueing;
 
-import io.lettuce.core.RedisBusyException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
@@ -9,10 +9,7 @@ import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.stream.Consumer;
-import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.ReadOffset;
-import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.stream.StreamListener;
@@ -20,10 +17,9 @@ import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.Subscription;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
+@Slf4j
 // Bean의 생명주기 관리를 통해 Consumer group 관리
 public class RedisMessageSubscriber implements StreamListener<String, MapRecord<String, String, String>>, InitializingBean,
         DisposableBean {
@@ -46,17 +42,16 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
 
     @Override
     public void afterPropertiesSet() {
-        String groupName = topic.getTopic() + ":" + UUID.randomUUID();
 
-        while (true) {
-            try {
-                redisTemplate.opsForStream().createGroup(groupName, ReadOffset.from("0"), GROUP_NAME);
-                break;
-            } catch (RedisBusyException e) {
-                groupName = topic.getTopic() + ":" + UUID.randomUUID();
-            }
+        String streamKey = topic.getTopic();
+        StreamInfo.XInfoGroups groups = redisTemplate.opsForStream().groups(streamKey);
+        boolean groupExists = groups.stream().anyMatch(group -> group.groupName().equals(GROUP_NAME));
+
+        if (!groupExists) {
+            redisTemplate.opsForStream().createGroup(streamKey, ReadOffset.from("0"), GROUP_NAME);
         }
-        redisTemplate.opsForStream().trim(groupName, maxStreamLength);
+        
+        redisTemplate.opsForStream().trim(streamKey, maxStreamLength);
 
         this.subscription = listenerContainer.receive(
                 Consumer.from(GROUP_NAME, CONSUMER_NAME),
