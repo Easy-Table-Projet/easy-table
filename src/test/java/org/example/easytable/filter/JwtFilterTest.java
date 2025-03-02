@@ -1,5 +1,6 @@
 package org.example.easytable.filter;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,17 +55,22 @@ class JwtFilterTest {
 		String token = "valid.jwt.token";
 		String email = "user@example.com";
 
+		Claims claims = mock(Claims.class); // Claims 객체 Mock 생성
+
 		when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-		when(jwtUtil.extractEmail(token)).thenReturn(email);
+		when(jwtUtil.getClaims(token)).thenReturn(claims); // getClaims() 호출 Mock 설정
+		when(claims.getSubject()).thenReturn(email); // subject(email) 반환값 설정
 		when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
-		when(userDetails.getAuthorities()).thenReturn(Collections.emptyList()); // 추가
+		when(userDetails.getAuthorities()).thenReturn(Collections.emptyList());
 
 		jwtFilter.doFilterInternal(request, response, filterChain);
 
+		verify(jwtUtil).getClaims(token); // getClaims() 호출 검증
+		verify(claims).getSubject(); // getSubject() 호출 검증
 		verify(userDetailsService).loadUserByUsername(email);
 		verify(filterChain).doFilter(request, response);
 		assertNotNull(SecurityContextHolder.getContext().getAuthentication());
-		verify(userDetails).getAuthorities(); // 추가
+		verify(userDetails).getAuthorities();
 	}
 
 	@Test
@@ -72,7 +78,7 @@ class JwtFilterTest {
 		String token = "invalid.jwt.token";
 
 		when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-		when(jwtUtil.extractEmail(token)).thenThrow(new RuntimeException("Invalid Token"));
+		when(jwtUtil.getClaims(token)).thenThrow(new RuntimeException("Invalid Token")); // getClaims()로 변경
 
 		jwtFilter.doFilterInternal(request, response, filterChain);
 
