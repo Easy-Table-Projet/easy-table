@@ -1,8 +1,6 @@
 package org.example.easytable.reservation.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.common.aop.annotation.LockKey;
-import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
@@ -16,6 +14,7 @@ import org.example.easytable.reservation.entity.ReservationStatus;
 import org.example.easytable.reservation.repository.ReservationRepository;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.example.easytable.restaurant.repository.RestaurantRepository;
+import org.example.easytable.restaurant.service.RestaurantLockingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,18 +31,21 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final RestaurantRepository restaurantRepository;
     private final MemberRepository memberRepository;
+    private final RestaurantLockingService lockingService;
 
-    @RedissonLock(prefix = "restaurant:")
+    //@RedissonLock(prefix = "restaurant:")
     @Transactional
-    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto) {
+    public ReservationCreateResDto createReservation(Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
+        if (restaurantRepository.decreaseRemainingTableCount(restaurantId) == 0) {
+            throw new IllegalArgumentException("해당 식당이 없거나 여유 테이블이 없습니다.");
+        }
+
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
-
-        restaurant.decreaseRemainingTableCount();
 
         Reservation newReservation = Reservation.builder()
                 .member(member)
@@ -56,7 +58,6 @@ public class ReservationService {
         return ReservationCreateResDto.from(newReservation);
     }
 
-    // TODO: @RedissonLock의 @LockKey 의존도를 낮춰 @LockKey를 사용하지 않고도 @RedissonLock를 적용할 수 있도록 수정할 것
     @Transactional
     public ReservationCreateResDto createReservation(ReservationCreateReqDto dto) {
         Long memberId = dto.getMemberId();

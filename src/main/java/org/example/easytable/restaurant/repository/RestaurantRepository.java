@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -37,4 +38,12 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Restaurant> findFirstById(Long id);
+
+    @Modifying
+    @Query(
+            "UPDATE Restaurant r " +
+            "SET r.remainingTableCount = r.remainingTableCount - 1 " +
+            "WHERE r.id = :restaurantId AND r.remainingTableCount > 0"
+    )
+    int decreaseRemainingTableCount(@Param("restaurantId") Long restaurantId);
 }
