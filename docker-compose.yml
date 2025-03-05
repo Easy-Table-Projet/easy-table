@@ -23,6 +23,8 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_HOST}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PORT}
     ports:
       - "${ELASTICSEARCH_PORT}:9200"
 
