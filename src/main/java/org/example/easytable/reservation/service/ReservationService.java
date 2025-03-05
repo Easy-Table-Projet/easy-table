@@ -40,7 +40,7 @@ public class ReservationService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
-        if (restaurantRepository.decreaseRemainingTableCount(restaurantId) == 0) {
+        if (!lockingService.atomicDecreaseRemainingTableCount(restaurantId)) {
             throw new IllegalArgumentException("해당 식당이 없거나 여유 테이블이 없습니다.");
         }
 

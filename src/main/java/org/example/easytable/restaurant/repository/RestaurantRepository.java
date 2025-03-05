@@ -39,7 +39,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Restaurant> findFirstById(Long id);
 
-    @Modifying
+    // 영속성 컨텍스트와 DB 간 동기화를 위한 옵션들
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(
             "UPDATE Restaurant r " +
             "SET r.remainingTableCount = r.remainingTableCount - 1 " +

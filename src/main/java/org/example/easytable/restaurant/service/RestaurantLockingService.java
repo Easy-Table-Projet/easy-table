@@ -28,7 +28,7 @@ public class RestaurantLockingService {
     }
 
     @Transactional
-    public boolean atomicDecreaseRemainingTableCount(@LockKey Long restaurantId) {
+    public boolean atomicDecreaseRemainingTableCount(Long restaurantId) {
         return (restaurantRepository.decreaseRemainingTableCount(restaurantId) > 0);
     }
 }
