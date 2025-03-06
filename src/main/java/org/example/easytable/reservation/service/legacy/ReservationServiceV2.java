@@ -1,6 +1,5 @@
-package org.example.easytable.reservation.service.queueing;
+package org.example.easytable.reservation.service.legacy;
 
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
@@ -8,6 +7,8 @@ import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
