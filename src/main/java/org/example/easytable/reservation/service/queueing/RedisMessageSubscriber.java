@@ -9,7 +9,7 @@ import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.stream.Consumer;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.ReadOffset;
@@ -54,21 +54,16 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
 
         try {
             redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                // 스트림 키, 그룹 이름, 시작 offset을 바이트 배열로 변환합니다.
                 byte[] keyBytes = streamKey.getBytes(StandardCharsets.UTF_8);
                 ReadOffset offsetBytes = ReadOffset.from("0");
 
-                // streamCommands()를 통해 group 생성을 수행합니다.
+                // Consumer group 생성
                 return Boolean.valueOf(
                         connection.streamCommands().xGroupCreate(keyBytes, GROUP_NAME, offsetBytes, true));
             });
-        } catch (DataAccessException e) {
-            // 이미 그룹이 존재하는 경우 Redis는 "BUSYGROUP" 메시지를 포함한 에러를 반환하므로 이를 무시합니다.
-            if (!e.getMessage().contains("BUSYGROUP")) {
-                throw e;
-            }
+        } catch (RedisSystemException e) {
+            if (e.getCause() == null || !e.getCause().getMessage().contains("BUSYGROUP")) { throw e; }
         }
-
 
         redisTemplate.opsForStream().trim(streamKey, maxStreamLength);
 
