@@ -65,6 +65,12 @@ dependencies {
 
     // jpa가 생성한 쿼리에서 실제로 사용된 ?를 보여줌
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+
+    // Spring Boot Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Prometheus Registry for Micrometer
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {

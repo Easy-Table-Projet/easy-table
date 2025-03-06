@@ -42,6 +42,7 @@ public class SecurityConfig {
 						.requestMatchers("/api/auth/**" , "/error").permitAll()
 //						.requestMatchers("/api/members/**").hasRole(MemberType.USER.name())
 						.requestMatchers("/api/owners/**").hasRole(MemberType.OWNER.name())
+						.requestMatchers("/actuator/**").permitAll()
 						.anyRequest().authenticated()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
