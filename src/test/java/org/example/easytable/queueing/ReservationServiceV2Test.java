@@ -1,16 +1,12 @@
-package org.example.easytable.lock.queueing;
+package org.example.easytable.queueing;
 
-import static org.mockito.Mockito.when;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.entity.ReservationStatus;
-import org.example.easytable.reservation.service.queueing.CreateReservationQueueService;
-import org.example.easytable.reservation.service.queueing.ReservationServiceV2;
+import org.example.easytable.reservation.service.legacy.CreateReservationQueueService;
+import org.example.easytable.reservation.service.legacy.ReservationServiceV2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +14,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ReservationServiceV2Test {

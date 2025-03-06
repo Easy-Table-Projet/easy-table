@@ -63,6 +63,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
+    // LocalDateTime 직렬화
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
     // prometheus
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.4.0'
     implementation 'io.micrometer:micrometer-registry-prometheus:1.14.3'

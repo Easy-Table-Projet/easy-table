@@ -6,25 +6,51 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.stream.StreamMessageListenerContainer;
+
+import java.time.Duration;
 
 @Configuration
 public class RedisConfig {
-    @Value("${spring.data.redis.host:localhost}")
-    private String redisHost;
-    @Value("${spring.data.redis.port:6379}")
-    private int redisPort;
+    private static final String TOPIC_NAME = "reservation:create";
 
-    // 하나의 LettuceConnectionFactory bean 생성 (동기, 비동기 모두 사용 가능)
+    @Value("${spring.data.redis.host:localhost}")
+    private String host;
+    @Value("${spring.data.redis.port:6379}")
+    private int port;
+    @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
+    private String password;
+    @Value("${spring.data.redis.username:default}")
+    private String username;
+
+    @Bean
+    ChannelTopic topic() {
+        return new ChannelTopic(TOPIC_NAME);
+    }
+
     @Bean
     public LettuceConnectionFactory lettuceConnectionFactory() {
-        return new LettuceConnectionFactory(redisHost, redisPort);
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+
+        if (password != null && !password.trim().isEmpty()) {
+            config.setPassword(password);
+        }
+
+        if (username != null && !username.trim().isEmpty()) {
+            config.setUsername(username);
+        }
+
+        return new LettuceConnectionFactory(config);
     }
 
     @Bean
@@ -41,6 +67,20 @@ public class RedisConfig {
     ) {
         return setupReactiveRedisTemplate(lettuceConnectionFactory,
                 new Jackson2JsonRedisSerializer<>(ReservationCreateReqDto.class));
+    }
+
+    @Bean
+    public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer(
+            RedisConnectionFactory redisConnectionFactory
+    ) {
+        StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
+                StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
+                        .batchSize(10)
+                        .errorHandler(t -> System.err.println("에러 발생: " + t.getMessage()))
+                        .pollTimeout(Duration.ZERO)
+                        .build();
+
+        return StreamMessageListenerContainer.create(redisConnectionFactory, options);
     }
 
     private <T> RedisTemplate<String, T> setupRedisTemplate(

@@ -12,12 +12,12 @@ public class RedissonConfig {
 
     @Value("${spring.data.redis.host:localhost}")  // ✅ 기본값 유지 (localhost)
     private String host;
-
     @Value("${spring.data.redis.port:6379}")  // ✅ 기본값 유지 (6379)
     private int port;
-
     @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
     private String password;
+    @Value("${spring.data.redis.username:}")
+    private String username;
 
     @Bean
     public RedissonClient redissonClient() {
@@ -28,6 +28,10 @@ public class RedissonConfig {
         // 🔥 비밀번호가 설정된 경우에만 인증 적용 (기본값 유지)
         if (password != null && !password.trim().isEmpty()) {
             config.useSingleServer().setPassword(password);
+        }
+
+        if (username != null && !username.trim().isEmpty()) {
+            config.useSingleServer().setUsername(username);
         }
 
         return Redisson.create(config);

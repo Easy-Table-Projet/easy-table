@@ -1,4 +1,4 @@
-package org.example.easytable.reservation.repository;
+package org.example.easytable.reservation.repository.legacy;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
