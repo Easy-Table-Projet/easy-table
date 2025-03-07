@@ -19,7 +19,7 @@ public class ReservationPessimisticController {
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long restaurantId,
+            @PathVariable("restaurantId") Long restaurantId,
             @RequestBody ReservationPostReqDto reservationPostDto
     ) {
         Long memberId = userDetails.getId();
