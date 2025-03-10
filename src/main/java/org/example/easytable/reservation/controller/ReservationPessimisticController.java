@@ -1,6 +1,7 @@
 package org.example.easytable.reservation.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.aop.annotation.Timer;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.service.ReservationPessimisticLockService;
@@ -17,6 +18,7 @@ public class ReservationPessimisticController {
     private final ReservationPessimisticLockService reservationService;
 
     @PostMapping("/{restaurantId}")
+    @Timer
     public ResponseEntity<ReservationCreateResDto> createReservation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable("restaurantId") Long restaurantId,

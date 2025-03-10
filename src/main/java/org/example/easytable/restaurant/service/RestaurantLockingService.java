@@ -34,18 +34,24 @@ public class RestaurantLockingService {
     }
 
     @Transactional
-    public boolean atomicDecreaseRemainingTableCount(Long restaurantId) {
+    public Restaurant atomicDecreaseRemainingTableCount(Long restaurantId) {
         int updated = restaurantRepository.decreaseRemainingTableCount(restaurantId);
+
+        if (updated <= 0) {
+            throw new IllegalArgumentException("해당 식당이 없거나 여유 테이블이 없습니다.");
+        }
 
         // 수동으로 flush()를 호출해 DB와 동기화
         entityManager.flush();
 
         Restaurant restaurant = entityManager.find(Restaurant.class, restaurantId);
-        if (restaurant != null && entityManager.contains(restaurant)) {
+        if (restaurant == null) { throw CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"); }
+
+        if (entityManager.contains(restaurant)) {
             // detach()로 해당 restaurant만 캐싱 해제
             entityManager.detach(restaurant);
         }
 
-        return updated > 0;
+        return restaurant;
     }
 }
