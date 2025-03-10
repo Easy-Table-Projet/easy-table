@@ -35,7 +35,9 @@ public class ReservationService {
 
     @RedissonLock(prefix = "restaurant:")
     @Transactional
-    public ReservationCreateResDto createReservation(@LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto) {
+    public ReservationCreateResDto createReservation(
+            @LockKey Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto
+    ) throws CustomException {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));

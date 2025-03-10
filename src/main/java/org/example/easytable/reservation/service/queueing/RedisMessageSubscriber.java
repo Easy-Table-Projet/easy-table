@@ -66,14 +66,19 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
     public void onMessage(MapRecord<String, String, String> message) {
         ReservationCreateReqDto request = serializerUtil.deserialize(message.getValue().get(key));
 
-        ReservationCreateResDto response = reservationService.createReservation(request);
-
-        // SinkRegistry를 통해 요청을 보낸 스레드에 결과 전송
-        sinkRegistry.completeSink(request.getRequestId(), response);
+        try {
+            ReservationCreateResDto response = reservationService.createReservation(request);
+            // SinkRegistry를 통해 요청을 보낸 스레드에 결과 전송
+            sinkRegistry.completeSink(request.getRequestId(), response);
+            redisTemplate.opsForStream().acknowledge(topic.getTopic(), GROUP_NAME, message.getId());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            sinkRegistry.completeSinkExceptionally(request.getRequestId(), e);
+        }
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         if (subscription != null) {
             subscription.cancel();
         }

@@ -19,6 +19,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 
 import java.time.Duration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class RedisConfig {
@@ -73,11 +75,14 @@ public class RedisConfig {
     public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer(
             RedisConnectionFactory redisConnectionFactory
     ) {
+        Executor executor = Executors.newFixedThreadPool(10); // Consumer Thread 수 조정
+
         StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
                 StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
-                        .batchSize(10)
+                        .batchSize(10) // Consumer Thread 수와 같게 설정할 것
                         .errorHandler(t -> System.err.println("에러 발생: " + t.getMessage()))
                         .pollTimeout(Duration.ZERO)
+                        .executor(executor)
                         .build();
 
         return StreamMessageListenerContainer.create(redisConnectionFactory, options);
