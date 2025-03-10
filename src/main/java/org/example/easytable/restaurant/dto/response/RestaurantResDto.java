@@ -7,7 +7,7 @@ import org.example.easytable.restaurant.entity.RestaurantDocument;
 
 @Builder
 public record RestaurantResDto(
-        Long id,
+        String id,
         String name,
         String address,
         int maxTableCount,
@@ -17,7 +17,7 @@ public record RestaurantResDto(
 ) {
     public static RestaurantResDto from(Restaurant restaurant) {
         return RestaurantResDto.builder()
-                .id(restaurant.getId())
+                .id(String.valueOf(restaurant.getId()))
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .maxTableCount(restaurant.getMaxTableCount())
@@ -28,7 +28,7 @@ public record RestaurantResDto(
     }
     public static RestaurantResDto from(RestaurantDocument restaurant) {
         return RestaurantResDto.builder()
-                .id(Long.parseLong(restaurant.getId()))
+                .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .maxTableCount(restaurant.getMaxTableCount())
