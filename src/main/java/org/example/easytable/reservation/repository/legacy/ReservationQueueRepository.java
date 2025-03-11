@@ -1,4 +1,4 @@
-package org.example.easytable.reservation.repository;
+package org.example.easytable.reservation.repository.legacy;
 
 import org.springframework.data.domain.Range;
 import reactor.core.publisher.Flux;

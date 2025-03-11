@@ -37,6 +37,8 @@ out/
 .vscode/
 
 
-**/src/main/resources/application*.yml
-**/src/main/resources/application*.properties
+# application-local.yml, application-local.properties만 무시
+/src/main/resources/application-local.yml
+/src/main/resources/application-local.properties
+
 .env

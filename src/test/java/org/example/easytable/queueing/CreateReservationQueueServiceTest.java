@@ -1,4 +1,4 @@
-package org.example.easytable.lock.queueing;
+package org.example.easytable.queueing;
 
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.member.entity.Member;
@@ -6,9 +6,9 @@ import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
-import org.example.easytable.reservation.repository.ReservationQueueRepository;
+import org.example.easytable.reservation.repository.legacy.ReservationQueueRepository;
 import org.example.easytable.reservation.service.ReservationService;
-import org.example.easytable.reservation.service.queueing.CreateReservationQueueService;
+import org.example.easytable.reservation.service.legacy.CreateReservationQueueService;
 import org.example.easytable.restaurant.entity.Restaurant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,7 +91,7 @@ public class CreateReservationQueueServiceTest {
     // Test for waitForProcessingResult when sink exists
     @Test
     public void waitForProcessingResult_WithSink() {
-        String requestId = "dummy-request";
+        Long requestId = System.currentTimeMillis();
         // 테스트용 sink를 직접 등록
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();
         queueService.getResultSinkMap().put(requestId, sink);
@@ -111,7 +111,7 @@ public class CreateReservationQueueServiceTest {
     // Test for waitForProcessingResult when sink does not exist
     @Test
     public void waitForProcessingResult_NoSink() {
-        String requestId = "non-existent";
+        Long requestId = System.currentTimeMillis();
         Mono<ReservationCreateResDto> resultMono = queueService.waitForProcessingResult(requestId);
 
         StepVerifier.create(resultMono)

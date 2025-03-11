@@ -1,6 +1,7 @@
 package org.example.easytable.reservation.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.easytable.common.aop.annotation.Timer;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
@@ -21,14 +22,15 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping("/{restaurantId}")
+    @Timer
     public ResponseEntity<ReservationCreateResDto> createReservation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long restaurantId,
-            @RequestBody ReservationPostReqDto reservationPostDto
+            @PathVariable("restaurantId") Long restaurantId,
+            @RequestBody ReservationPostReqDto requestDto
     ) {
         Long memberId = userDetails.getId();
 
-        reservationService.createReservation(restaurantId, memberId, reservationPostDto);
+        reservationService.createReservation(restaurantId, memberId, requestDto);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -63,7 +65,7 @@ public class ReservationController {
         reservationService.deleteReservation(memberId, reservationId);
         return ResponseEntity.noContent().build(); // HTTP 204 응답 (성공, 내용 없음)
     }
-  
+
     @PostMapping("/dummy")
     public void deleteReservation(){
         reservationService.bulkInsertReservations(100000);
