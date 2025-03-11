@@ -18,18 +18,23 @@ services:
       - "${REDIS_PORT}:6379"
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
     container_name: elasticsearch
     environment:
+      - xpack.security.enabled=false  # 보안 인증 비활성화
+      - xpack.security.http.ssl.enabled=false  # HTTPS 비활성화 (HTTP 사용)
+      - xpack.security.transport.ssl.enabled=false
       - discovery.type=single-node
       - ES_JAVA_OPTS=${ES_JAVA_OPTS}
-      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_HOST}
-      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PORT}
+#      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_HOST}
+#      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PORT}
     ports:
       - "${ELASTICSEARCH_PORT}:9200"
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.0
+    image: docker.elastic.co/kibana/kibana:8.12.0
     container_name: kibana
     depends_on:
       - elasticsearch
