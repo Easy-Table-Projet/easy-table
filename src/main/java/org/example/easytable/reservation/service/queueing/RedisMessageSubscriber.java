@@ -44,7 +44,7 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
     // TODO: 무분별한 @Value 정리하기
     @Value("${mapRecord-key:reservation-key}")
     private String key;
-    @Value("${max-stream-length:100}")
+    @Value("${max-stream-length:1000}")
     private long maxStreamLength;
 
     @Override

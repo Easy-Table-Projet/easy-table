@@ -24,6 +24,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -91,7 +92,7 @@ public class CreateReservationQueueServiceTest {
     // Test for waitForProcessingResult when sink exists
     @Test
     public void waitForProcessingResult_WithSink() {
-        Long requestId = System.currentTimeMillis();
+        String requestId = UUID.randomUUID().toString();
         // 테스트용 sink를 직접 등록
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();
         queueService.getResultSinkMap().put(requestId, sink);
@@ -111,7 +112,7 @@ public class CreateReservationQueueServiceTest {
     // Test for waitForProcessingResult when sink does not exist
     @Test
     public void waitForProcessingResult_NoSink() {
-        Long requestId = System.currentTimeMillis();
+        String requestId = UUID.randomUUID().toString();
         Mono<ReservationCreateResDto> resultMono = queueService.waitForProcessingResult(requestId);
 
         StepVerifier.create(resultMono)

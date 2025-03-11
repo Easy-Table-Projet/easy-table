@@ -27,7 +27,7 @@ public class CreateReservationQueueService {
 
     // 각 예약 요청의 결과를 전달하기 위한 Sinks (예약 ID -> Sinks.One)
     @Getter
-    private final ConcurrentHashMap<Long, Sinks.One<ReservationCreateResDto>> resultSinkMap =
+    private final ConcurrentHashMap<String, Sinks.One<ReservationCreateResDto>> resultSinkMap =
             new ConcurrentHashMap<>();
 
     public CreateReservationQueueService(
@@ -60,7 +60,7 @@ public class CreateReservationQueueService {
     }
 
     // 예약 처리 결과를 기다리는 메서드 (예약 ID에 대응되는 Sinks를 반환)
-    public Mono<ReservationCreateResDto> waitForProcessingResult(Long reservationId) {
+    public Mono<ReservationCreateResDto> waitForProcessingResult(String reservationId) {
         Sinks.One<ReservationCreateResDto> sink = resultSinkMap.get(reservationId);
         if (sink != null) {
             return sink.asMono();

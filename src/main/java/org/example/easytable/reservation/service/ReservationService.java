@@ -47,12 +47,12 @@ public class ReservationService {
 
         Restaurant restaurant = lockingService.atomicDecreaseRemainingTableCount(restaurantId);
 
-        List<Reservation> duplicates = reservationRepository.findDuplicatedReservations(
-                memberId, restaurantId, reservationPostReqDto.reservationTime());
-
-        if (!duplicates.isEmpty()) {
-            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
-        }
+//        List<Reservation> duplicates = reservationRepository.findDuplicatedReservations(
+//                memberId, restaurantId, reservationPostReqDto.reservationTime());
+//
+//        if (!duplicates.isEmpty()) {
+//            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
+//        }
 
         Reservation newReservation = Reservation.builder()
                 .member(member)
