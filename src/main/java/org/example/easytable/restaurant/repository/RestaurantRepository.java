@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query(value = """
@@ -32,4 +33,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 """)
     List<Restaurant> findTop100RestaurantList(
             @Param("oneMonthAgo") LocalDateTime oneMonthAgo);
+
+    // 비관적 lock을 적용하려는 경우에 어노테이션을 활성화시킬 것
+    // @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Restaurant> findFirstById(Long id);
 }

@@ -7,10 +7,12 @@ import org.example.easytable.restaurant.dto.response.RestaurantResDto;
 import org.example.easytable.restaurant.service.RestaurantCreateDummyDataService;
 import org.example.easytable.restaurant.service.RestaurantElasticSearchService;
 import org.example.easytable.restaurant.service.RestaurantService;
+import org.example.easytable.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,10 +26,13 @@ public class RestaurantController {
 
     @PostMapping
     public ResponseEntity<RestaurantResDto> createRestaurant(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody RestaurantCreateReqDto restaurantCreateReqDto) {
+        Long memberId = userDetails.getId();
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(restaurantService.createRestaurant(restaurantCreateReqDto));
+                .body(restaurantService.createRestaurant(memberId, restaurantCreateReqDto));
     }
     @PostMapping("/es")
     public ResponseEntity<RestaurantResDto> createRestaurantEs(
