@@ -22,6 +22,8 @@ import java.time.Duration;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static org.springframework.data.redis.stream.StreamMessageListenerContainer.StreamMessageListenerContainerOptions;
+
 @Configuration
 public class RedisConfig {
     private static final String TOPIC_NAME = "reservation:create";
@@ -30,6 +32,8 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port:6379}")
     private int port;
+    @Value("${stream.consumer_group.size:10}")
+    private int consumerGroupSize;
     @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
     private String password;
     @Value("${spring.data.redis.username:default}")
@@ -75,11 +79,11 @@ public class RedisConfig {
     public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer(
             RedisConnectionFactory redisConnectionFactory
     ) {
-        Executor executor = Executors.newFixedThreadPool(10); // Consumer Thread 수 조정
+        Executor executor = Executors.newFixedThreadPool(consumerGroupSize); // Consumer Thread 수 조정
 
-        StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
+        StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
                 StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
-                        .batchSize(10) // Consumer Thread 수와 같게 설정할 것
+                        .batchSize(consumerGroupSize)
                         .errorHandler(t -> System.err.println("에러 발생: " + t.getMessage()))
                         .pollTimeout(Duration.ZERO)
                         .executor(executor)
