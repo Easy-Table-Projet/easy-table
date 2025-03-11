@@ -9,13 +9,20 @@ import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.stream.*;
+import org.springframework.data.redis.RedisSystemException;
+import org.springframework.data.redis.connection.stream.Consumer;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.ReadOffset;
+import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.Subscription;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
@@ -44,13 +51,20 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
     public void afterPropertiesSet() {
 
         String streamKey = topic.getTopic();
-        StreamInfo.XInfoGroups groups = redisTemplate.opsForStream().groups(streamKey);
-        boolean groupExists = groups.stream().anyMatch(group -> group.groupName().equals(GROUP_NAME));
 
-        if (!groupExists) {
-            redisTemplate.opsForStream().createGroup(streamKey, ReadOffset.from("0"), GROUP_NAME);
+        try {
+            redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                byte[] keyBytes = streamKey.getBytes(StandardCharsets.UTF_8);
+                ReadOffset offsetBytes = ReadOffset.from("0");
+
+                // Consumer group 생성
+                return Boolean.valueOf(
+                        connection.streamCommands().xGroupCreate(keyBytes, GROUP_NAME, offsetBytes, true));
+            });
+        } catch (RedisSystemException e) {
+            if (e.getCause() == null || !e.getCause().getMessage().contains("BUSYGROUP")) { throw e; }
         }
-        
+
         redisTemplate.opsForStream().trim(streamKey, maxStreamLength);
 
         this.subscription = listenerContainer.receive(
