@@ -37,7 +37,7 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
             try {
                 publishToStream(dto);
                 return;
-            } catch (RedisSystemException e) {
+            } catch (Exception e) {
                 ++attempt;
                 sleepThread();
             }
