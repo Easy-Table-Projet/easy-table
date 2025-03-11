@@ -66,7 +66,7 @@ public class RestaurantCreateDummyDataService {
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10000; i++) {
             Restaurant restaurant = Restaurant.builder()
                     .name(getRandomRestaurantName() + " " + (i + 1)) // 식당1, 식당2...
                     .address("서울시 강남구 " + (i + 1))
