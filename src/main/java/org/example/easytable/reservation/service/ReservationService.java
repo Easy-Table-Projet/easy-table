@@ -38,7 +38,6 @@ public class ReservationService {
     public ReservationCreateResDto createReservation(
             Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto
     ) throws CustomException {
-        System.out.println("예약 기한 만료 여부: " + reservationPostReqDto.reservationTime().isBefore(LocalDateTime.now()));
         if (reservationPostReqDto.reservationTime().isBefore(LocalDateTime.now())) {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 기한이 지난 예약입니다");
         }
@@ -47,6 +46,13 @@ public class ReservationService {
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
         Restaurant restaurant = lockingService.atomicDecreaseRemainingTableCount(restaurantId);
+
+        List<Reservation> duplicates = reservationRepository.findDuplicatedReservations(
+                memberId, restaurantId, reservationPostReqDto.reservationTime());
+
+        if (!duplicates.isEmpty()) {
+            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
+        }
 
         Reservation newReservation = Reservation.builder()
                 .member(member)
