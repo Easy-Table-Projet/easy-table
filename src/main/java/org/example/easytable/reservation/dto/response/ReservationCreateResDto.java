@@ -4,9 +4,10 @@ import org.example.easytable.reservation.entity.Reservation;
 import org.example.easytable.reservation.entity.ReservationStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record ReservationCreateResDto(
-        Long requestId,
+        String requestId,
         Long reservationId,
         Long memberId,
         Long restaurantId,
@@ -15,7 +16,7 @@ public record ReservationCreateResDto(
 ) {
     public static ReservationCreateResDto from(Reservation reservation) {
         return new ReservationCreateResDto(
-                System.currentTimeMillis(),
+                UUID.randomUUID().toString(),
                 reservation.getId(),
                 reservation.getMember().getId(),
                 reservation.getRestaurant().getId(),
@@ -24,7 +25,7 @@ public record ReservationCreateResDto(
         );
     }
 
-    public static ReservationCreateResDto of(Reservation reservation, Long requestId) {
+    public static ReservationCreateResDto of(Reservation reservation, String requestId) {
         return new ReservationCreateResDto(
                 requestId,
                 reservation.getId(),

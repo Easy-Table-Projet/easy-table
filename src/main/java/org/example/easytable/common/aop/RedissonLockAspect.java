@@ -11,6 +11,7 @@ import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Order(-1) // @Transactional보다 먼저 실행되는 것을 보장
 public class RedissonLockAspect {
     private final RedissonClient redissonClient;
 

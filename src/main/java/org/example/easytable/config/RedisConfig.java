@@ -19,6 +19,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 
 import java.time.Duration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import static org.springframework.data.redis.stream.StreamMessageListenerContainer.StreamMessageListenerContainerOptions;
 
 @Configuration
 public class RedisConfig {
@@ -28,6 +32,8 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port:6379}")
     private int port;
+    @Value("${stream.consumer_group.size:50}")
+    private int consumerGroupSize;
     @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
     private String password;
     @Value("${spring.data.redis.username:default}")
@@ -73,11 +79,14 @@ public class RedisConfig {
     public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer(
             RedisConnectionFactory redisConnectionFactory
     ) {
-        StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
+        Executor executor = Executors.newFixedThreadPool(consumerGroupSize); // Consumer Thread 수 조정
+
+        StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
                 StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
-                        .batchSize(10)
-                        .errorHandler(t -> System.err.println("에러 발생: " + t.getMessage()))
-                        .pollTimeout(Duration.ZERO)
+                        .batchSize(consumerGroupSize)
+                        .errorHandler(t -> System.err.println("Stream 소비 중 에러 발생: " + t.getMessage()))
+                        .pollTimeout(Duration.ofMillis(10))
+                        .executor(executor)
                         .build();
 
         return StreamMessageListenerContainer.create(redisConnectionFactory, options);

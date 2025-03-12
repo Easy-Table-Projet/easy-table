@@ -2,6 +2,8 @@ package org.example.easytable.reservation.dto.request;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
@@ -9,7 +11,7 @@ import lombok.*;
 @EqualsAndHashCode
 @ToString
 public class ReservationCreateReqDto {
-    private final Long requestId = System.currentTimeMillis();
+    private final String requestId = UUID.randomUUID().toString();
     private Long restaurantId;
     private Long memberId;
     private ReservationPostReqDto reservationPostReqDto;

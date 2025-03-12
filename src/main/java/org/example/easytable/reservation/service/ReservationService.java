@@ -35,12 +35,24 @@ public class ReservationService {
 
     //@RedissonLock(prefix = "restaurant:")
     @Transactional
-    public ReservationCreateResDto createReservation(Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto) {
+    public ReservationCreateResDto createReservation(
+            Long restaurantId, Long memberId, ReservationPostReqDto reservationPostReqDto
+    ) throws CustomException {
+        if (reservationPostReqDto.reservationTime().isBefore(LocalDateTime.now())) {
+            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 기한이 지난 예약입니다");
+        }
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
         Restaurant restaurant = lockingService.atomicDecreaseRemainingTableCount(restaurantId);
+
+        List<Reservation> duplicates = reservationRepository.findDuplicatedReservations(
+                memberId, restaurantId, reservationPostReqDto.reservationTime());
+
+        if (!duplicates.isEmpty()) {
+            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
+        }
 
         Reservation newReservation = Reservation.builder()
                 .member(member)
@@ -55,29 +67,7 @@ public class ReservationService {
 
     @Transactional
     public ReservationCreateResDto createReservation(ReservationCreateReqDto dto) {
-        Long memberId = dto.getMemberId();
-        Long restaurantId = dto.getRestaurantId();
-        ReservationPostReqDto reservationPostReqDto = dto.getReservationPostReqDto();
-
-        System.out.println("Creating reservation with memberId: " + memberId);
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
-
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
-
-        restaurant.decreaseRemainingTableCount();
-
-        Reservation newReservation = Reservation.builder()
-                .member(member)
-                .restaurant(restaurant)
-                .reservationTime(reservationPostReqDto.reservationTime())
-                .build();
-
-        reservationRepository.save(newReservation);
-
-        return ReservationCreateResDto.of(newReservation, dto.getRequestId());
+        return this.createReservation(dto.getRestaurantId(), dto.getMemberId(), dto.getReservationPostReqDto());
     }
 
     public List<ReservationGetResDto> getReservationByRestaurant(Long restaurantId) {

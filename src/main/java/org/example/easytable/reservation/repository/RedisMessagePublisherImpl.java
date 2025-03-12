@@ -27,7 +27,7 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
 
     @Value("${mapRecord-key:reservation-key}")
     private String key;
-    @Value("${max-stream-length:100}")
+    @Value("${max-stream-length:1000}")
     private long maxStreamLength;
 
     @Override
@@ -37,13 +37,13 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
             try {
                 publishToStream(dto);
                 return;
-            } catch (RedisSystemException e) {
+            } catch (Exception e) {
                 ++attempt;
                 sleepThread();
             }
         }
 
-        throw new TimeoutException("");
+        throw new TimeoutException();
     }
 
     private void publishToStream(ReservationCreateReqDto dto) {
