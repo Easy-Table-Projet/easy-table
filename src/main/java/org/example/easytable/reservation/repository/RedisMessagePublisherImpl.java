@@ -42,11 +42,9 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
     }
 
     private void publishToStream(ReservationCreateReqMessage dto) {
-        String serialized = serializer.serialize(dto);
-        Map<String, String> message = Collections.singletonMap(streamsOption.key(), serialized);
+        Map<String, String> message = Collections.singletonMap(streamsOption.key(), serializer.serialize(dto));
 
-        XAddOptions options = XAddOptions.maxlen(streamsOption.maxStreamLength());
-        Object addedId = redisTemplate.opsForStream().add(topic.getTopic(), message, options);
+        Object addedId = redisTemplate.opsForStream().add(topic.getTopic(), message, createXAddOptions());
 
         if (addedId == null) {
             throw new RedisSystemException("스트림이 가득 차서 메시지를 추가할 수 없습니다.", new RuntimeException());
@@ -59,5 +57,9 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
         } catch (InterruptedException e) {
             System.out.println("thread interrupted");
         }
+    }
+
+    private XAddOptions createXAddOptions() {
+        return XAddOptions.maxlen(streamsOption.maxStreamLength());
     }
 }

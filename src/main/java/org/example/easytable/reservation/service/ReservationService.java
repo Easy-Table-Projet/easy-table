@@ -47,12 +47,7 @@ public class ReservationService {
 
         Restaurant foundRestaurant = lockingService.atomicDecreaseRemainingTableCount(restaurantId);
 
-        List<Reservation> duplicatedReservations = reservationRepository.findDuplicatedReservations(
-                memberId, restaurantId, reservationPostReqDto.reservationTime());
-
-        if (!duplicatedReservations.isEmpty()) {
-            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
-        }
+        checkDuplicatedReservation(memberId, restaurantId, reservationPostReqDto);
 
         Reservation newReservation = Reservation.builder()
                 .member(reservingMember)
@@ -159,5 +154,16 @@ public class ReservationService {
         }
 
         System.out.println("✅ 10만 건의 예약 데이터 삽입 완료!");
+    }
+
+    private void checkDuplicatedReservation(
+            Long memberId, Long restaurantId, ReservationPostReqDto reservationPostReqDto
+    ) {
+        List<Reservation> duplicatedReservations = reservationRepository.findDuplicatedReservations(
+                memberId, restaurantId, reservationPostReqDto.reservationTime());
+
+        if (!duplicatedReservations.isEmpty()) {
+            throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
+        }
     }
 }

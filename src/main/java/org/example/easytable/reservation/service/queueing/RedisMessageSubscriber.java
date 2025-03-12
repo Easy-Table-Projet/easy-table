@@ -47,18 +47,7 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
 
         String streamKey = topic.getTopic();
 
-        try {
-            redisTemplate.execute((RedisCallback<Boolean>) connection -> {
-                byte[] keyBytes = streamKey.getBytes(StandardCharsets.UTF_8);
-                ReadOffset offsetBytes = ReadOffset.from(groupOption.readOffset());
-
-                // Consumer group 생성
-                return Boolean.valueOf(
-                        connection.streamCommands().xGroupCreate(keyBytes, groupOption.groupName(), offsetBytes, true));
-            });
-        } catch (RedisSystemException e) {
-            if (e.getCause() == null || !e.getCause().getMessage().contains("BUSYGROUP")) { throw e; }
-        }
+        createConsumerGroup(streamKey);
 
         redisTemplate.opsForStream().trim(streamKey, streamsOption.maxStreamLength());
 
@@ -94,6 +83,21 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
 
         if (listenerContainer != null) {
             listenerContainer.stop();
+        }
+    }
+
+    private void createConsumerGroup(String streamKey) {
+        try {
+            redisTemplate.execute((RedisCallback<Boolean>) connection -> {
+                byte[] keyBytes = streamKey.getBytes(StandardCharsets.UTF_8);
+                ReadOffset offsetBytes = ReadOffset.from(groupOption.readOffset());
+
+                // Consumer group 생성
+                return Boolean.valueOf(
+                        connection.streamCommands().xGroupCreate(keyBytes, groupOption.groupName(), offsetBytes, true));
+            });
+        } catch (RedisSystemException e) {
+            if (e.getCause() == null || !e.getCause().getMessage().contains("BUSYGROUP")) { throw e; }
         }
     }
 }
