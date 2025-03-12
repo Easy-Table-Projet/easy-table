@@ -21,7 +21,6 @@ public class ReservationQueueingControllerV3 {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable("restaurantId") Long restaurantId,
             @RequestBody ReservationPostReqDto requestDto
-
     ) throws Exception {
         Long memberId = userDetails.getId();
 

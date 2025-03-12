@@ -20,6 +20,11 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
+    @PostMapping("/dummy")
+    public void bulkCreateReservations() {
+        reservationService.bulkInsertReservations(100000);
+    }
+
     @PostMapping("/{restaurantId}")
     public ResponseEntity<ReservationCreateResDto> createReservation(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -62,10 +67,5 @@ public class ReservationController {
         Long memberId = userDetails.getId();
         reservationService.deleteReservation(memberId, reservationId);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/dummy")
-    public void deleteReservation() {
-        reservationService.bulkInsertReservations(100000);
     }
 }

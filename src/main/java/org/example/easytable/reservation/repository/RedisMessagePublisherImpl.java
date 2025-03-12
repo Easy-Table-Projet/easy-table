@@ -41,6 +41,10 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
         throw new TimeoutException();
     }
 
+    private XAddOptions createXAddOptions() {
+        return XAddOptions.maxlen(streamsOption.maxStreamLength());
+    }
+
     private void publishToStream(ReservationCreateReqMessage dto) {
         Map<String, String> message = Collections.singletonMap(streamsOption.key(), serializer.serialize(dto));
 
@@ -57,9 +61,5 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
         } catch (InterruptedException e) {
             System.out.println("thread interrupted");
         }
-    }
-
-    private XAddOptions createXAddOptions() {
-        return XAddOptions.maxlen(streamsOption.maxStreamLength());
     }
 }
