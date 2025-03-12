@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.util.UUID;
 
+// 대기열에 사용되는 메시지 형식
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor

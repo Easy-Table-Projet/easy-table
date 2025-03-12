@@ -12,10 +12,12 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
+import static reactor.core.publisher.Sinks.One;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReservationServiceV3 {
+public class ReservationQueueingService {
     private final MessagePublisher publisher;
     private final SinksRegistry sinkRegistry;
 
@@ -23,7 +25,7 @@ public class ReservationServiceV3 {
     private int waitingTime;
 
     public ReservationCreateResDto publishRequest(ReservationCreateReqMessage dto) throws Exception {
-        Sinks.One<ReservationCreateResDto> sink = addSink(dto);
+        One<ReservationCreateResDto> sink = addSink(dto);
 
         publisher.publish(dto);
 
@@ -38,8 +40,8 @@ public class ReservationServiceV3 {
         }
     }
 
-    private Sinks.One<ReservationCreateResDto> addSink(ReservationCreateReqMessage dto) {
-        Sinks.One<ReservationCreateResDto> sink = Sinks.one();
+    private One<ReservationCreateResDto> addSink(ReservationCreateReqMessage dto) {
+        One<ReservationCreateResDto> sink = Sinks.one();
         sinkRegistry.registerSink(dto.getRequestId(), sink);
         log.debug("saved sink: {}", sinkRegistry.getSink(dto.getRequestId()));
         return sink;

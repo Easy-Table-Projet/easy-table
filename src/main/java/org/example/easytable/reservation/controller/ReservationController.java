@@ -61,7 +61,7 @@ public class ReservationController {
     ) {
         Long memberId = userDetails.getId();
         reservationService.deleteReservation(memberId, reservationId);
-        return ResponseEntity.noContent().build(); // HTTP 204 응답 (성공, 내용 없음)
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/dummy")

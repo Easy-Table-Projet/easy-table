@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static reactor.core.publisher.Sinks.One;
 
+// consumer -> producer 방향으로 요청 처리 결과를 전송할 수 있도록 Sinks를 관리하는 클래스
 @Component
 public class SinksRegistry {
     private final ConcurrentHashMap<String, One<ReservationCreateResDto>> sinksMap = new ConcurrentHashMap<>();
