@@ -65,7 +65,7 @@ public class ReservationController {
     }
 
     @PostMapping("/dummy")
-    public void deleteReservation(){
+    public void deleteReservation() {
         reservationService.bulkInsertReservations(100000);
     }
 }

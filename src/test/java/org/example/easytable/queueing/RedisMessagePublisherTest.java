@@ -3,7 +3,7 @@ package org.example.easytable.queueing;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.config.streams.ProducerOption;
 import org.example.easytable.config.streams.StreamsOption;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.repository.RedisMessagePublisherImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ public class RedisMessagePublisherTest {
     @Mock
     private ChannelTopic topic;
     @Mock
-    private SerializerUtil<ReservationCreateReqDto> serializer;
+    private SerializerUtil<ReservationCreateReqMessage> serializer;
 
     private final StreamsOption streamsOption = new StreamsOption("reservation-key", 1000);
     private final ProducerOption producerOption = new ProducerOption(5, 500);
@@ -50,7 +50,7 @@ public class RedisMessagePublisherTest {
     void testPublishToStreamSuccess() throws TimeoutException {
         // given
         ReservationPostReqDto postReq = new ReservationPostReqDto(LocalDateTime.now());
-        ReservationCreateReqDto dto = ReservationCreateReqDto.builder()
+        ReservationCreateReqMessage dto = ReservationCreateReqMessage.builder()
                 .restaurantId(1L)
                 .memberId(2L)
                 .reservationPostReqDto(postReq)
@@ -86,7 +86,7 @@ public class RedisMessagePublisherTest {
     @Test
     void testPublishToStreamFailure() {
         ReservationPostReqDto postReq = new ReservationPostReqDto(LocalDateTime.now());
-        ReservationCreateReqDto dto = ReservationCreateReqDto.builder()
+        ReservationCreateReqMessage dto = ReservationCreateReqMessage.builder()
                 .restaurantId(1L)
                 .memberId(2L)
                 .reservationPostReqDto(postReq)

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.config.streams.ProducerOption;
 import org.example.easytable.config.streams.StreamsOption;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -21,12 +21,12 @@ import static org.springframework.data.redis.connection.RedisStreamCommands.XAdd
 public class RedisMessagePublisherImpl implements MessagePublisher {
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic topic;
-    private final SerializerUtil<ReservationCreateReqDto> serializer;
+    private final SerializerUtil<ReservationCreateReqMessage> serializer;
     private final StreamsOption streamsOption;
     private final ProducerOption producerOption;
 
     @Override
-    public void publish(ReservationCreateReqDto dto) throws TimeoutException {
+    public void publish(ReservationCreateReqMessage dto) throws TimeoutException {
         int attempt = 0;
         while (attempt < producerOption.maxAttempts()) {
             try {
@@ -41,7 +41,7 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
         throw new TimeoutException();
     }
 
-    private void publishToStream(ReservationCreateReqDto dto) {
+    private void publishToStream(ReservationCreateReqMessage dto) {
         String serialized = serializer.serialize(dto);
         Map<String, String> message = Collections.singletonMap(streamsOption.key(), serialized);
 

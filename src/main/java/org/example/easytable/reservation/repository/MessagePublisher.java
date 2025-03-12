@@ -1,9 +1,9 @@
 package org.example.easytable.reservation.repository;
 
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 
 import java.util.concurrent.TimeoutException;
 
 public interface MessagePublisher {
-    public void publish(ReservationCreateReqDto dto) throws TimeoutException;
+    void publish(ReservationCreateReqMessage dto) throws TimeoutException;
 }

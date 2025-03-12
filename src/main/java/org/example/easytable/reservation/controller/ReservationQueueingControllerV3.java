@@ -1,7 +1,7 @@
 package org.example.easytable.reservation.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.service.queueing.ReservationServiceV3;
@@ -25,7 +25,7 @@ public class ReservationQueueingControllerV3 {
     ) throws Exception {
         Long memberId = userDetails.getId();
 
-        return ResponseEntity.ok(reservationService.queueRequest(new ReservationCreateReqDto(
+        return ResponseEntity.ok(reservationService.publishRequest(new ReservationCreateReqMessage(
                 restaurantId, memberId, requestDto
         )));
     }

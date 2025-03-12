@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class ReservationCreateReqDto {
+public class ReservationCreateReqMessage {
     private final String requestId = UUID.randomUUID().toString();
     private Long restaurantId;
     private Long memberId;

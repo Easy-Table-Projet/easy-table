@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.config.streams.ConsumerGroupOption;
 import org.example.easytable.config.streams.StreamsOption;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.DisposableBean;
@@ -33,7 +33,7 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
         DisposableBean {
     private final ChannelTopic topic;
     private final SinksRegistry sinkRegistry;
-    private final SerializerUtil<ReservationCreateReqDto> serializerUtil;
+    private final SerializerUtil<ReservationCreateReqMessage> serializerUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private final ReservationService reservationService;
     private final StreamMessageListenerContainer<String, MapRecord<String, String, String>> listenerContainer;
@@ -73,7 +73,7 @@ public class RedisMessageSubscriber implements StreamListener<String, MapRecord<
 
     @Override
     public void onMessage(MapRecord<String, String, String> message) {
-        ReservationCreateReqDto request = serializerUtil.deserialize(message.getValue().get(streamsOption.key()));
+        ReservationCreateReqMessage request = serializerUtil.deserialize(message.getValue().get(streamsOption.key()));
 
         try {
             ReservationCreateResDto response = reservationService.createReservation(request);

@@ -1,7 +1,7 @@
 package org.example.easytable.reservation.service.queueing;
 
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.repository.MessagePublisher;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ public class ReservationServiceV3 {
     @Value("${redis.streams.producer.waiting-seconds:60}")
     private int waitingTime;
 
-    public ReservationCreateResDto queueRequest(ReservationCreateReqDto dto) throws Exception {
+    public ReservationCreateResDto publishRequest(ReservationCreateReqMessage dto) throws Exception {
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();
         sinkRegistry.registerSink(dto.getRequestId(), sink);
 

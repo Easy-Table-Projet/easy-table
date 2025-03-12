@@ -10,29 +10,29 @@ import static reactor.core.publisher.Sinks.One;
 
 @Component
 public class SinksRegistry {
-    private final ConcurrentHashMap<String, One<ReservationCreateResDto>> sinkMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, One<ReservationCreateResDto>> sinksMap = new ConcurrentHashMap<>();
 
     public void registerSink(String requestId, One<ReservationCreateResDto> sink) {
-        sinkMap.put(requestId, sink);
+        sinksMap.put(requestId, sink);
     }
 
-    public One<ReservationCreateResDto> getSink(String requestId) { return sinkMap.get(requestId); }
+    public One<ReservationCreateResDto> getSink(String requestId) { return sinksMap.get(requestId); }
 
     public void completeSink(String requestId, ReservationCreateResDto response) {
-        One<ReservationCreateResDto> sink = sinkMap.get(requestId);
+        One<ReservationCreateResDto> sink = sinksMap.get(requestId);
         if (sink == null) {
             throw new IllegalArgumentException(requestId + "에 해당하는 Sinks가 존재하지 않습니다.");
         }
 
         sink.tryEmitValue(response);
-        sinkMap.remove(requestId);
+        sinksMap.remove(requestId);
     }
 
     public void completeSinkExceptionally(String requestId, Throwable e) {
-        Sinks.One<ReservationCreateResDto> sink = sinkMap.get(requestId);
+        Sinks.One<ReservationCreateResDto> sink = sinksMap.get(requestId);
         if (sink == null) { return; }
 
         sink.tryEmitError(e);
-        sinkMap.remove(requestId);
+        sinksMap.remove(requestId);
     }
 }

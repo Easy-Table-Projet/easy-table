@@ -3,7 +3,7 @@ package org.example.easytable.queueing;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.config.streams.ConsumerGroupOption;
 import org.example.easytable.config.streams.StreamsOption;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.entity.ReservationStatus;
@@ -33,7 +33,7 @@ public class RedisMessageSubscriberTest {
     @Mock
     private SinksRegistry sinkRegistry;
     @Mock
-    private SerializerUtil<ReservationCreateReqDto> serializerUtil;
+    private SerializerUtil<ReservationCreateReqMessage> serializerUtil;
     @Mock
     private RedisTemplate<String, String> redisTemplate;
     @Mock
@@ -61,7 +61,7 @@ public class RedisMessageSubscriberTest {
         Map<String, String> valueMap = new HashMap<>();
         valueMap.put("reservation-key", serializedData);
 
-        ReservationCreateReqDto request = ReservationCreateReqDto.builder()
+        ReservationCreateReqMessage request = ReservationCreateReqMessage.builder()
                 .restaurantId(1L)
                 .memberId(2L)
                 .reservationPostReqDto(new ReservationPostReqDto(LocalDateTime.now()))

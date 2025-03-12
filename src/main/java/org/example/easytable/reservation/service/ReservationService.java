@@ -5,7 +5,7 @@ import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.member.entity.Member;
 import org.example.easytable.member.repository.MemberRepository;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.dto.response.ReservationGetResDto;
@@ -42,21 +42,21 @@ public class ReservationService {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 기한이 지난 예약입니다");
         }
 
-        Member member = memberRepository.findById(memberId)
+        Member reservingMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 회원입니다"));
 
-        Restaurant restaurant = lockingService.atomicDecreaseRemainingTableCount(restaurantId);
+        Restaurant foundRestaurant = lockingService.atomicDecreaseRemainingTableCount(restaurantId);
 
-        List<Reservation> duplicates = reservationRepository.findDuplicatedReservations(
+        List<Reservation> duplicatedReservations = reservationRepository.findDuplicatedReservations(
                 memberId, restaurantId, reservationPostReqDto.reservationTime());
 
-        if (!duplicates.isEmpty()) {
+        if (!duplicatedReservations.isEmpty()) {
             throw CustomException.of(ErrorCode.BAD_REQUEST, "이미 해당 예약이 존재합니다.");
         }
 
         Reservation newReservation = Reservation.builder()
-                .member(member)
-                .restaurant(restaurant)
+                .member(reservingMember)
+                .restaurant(foundRestaurant)
                 .reservationTime(reservationPostReqDto.reservationTime())
                 .build();
 
@@ -66,7 +66,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationCreateResDto createReservation(ReservationCreateReqDto dto) {
+    public ReservationCreateResDto createReservation(ReservationCreateReqMessage dto) {
         return this.createReservation(dto.getRestaurantId(), dto.getMemberId(), dto.getReservationPostReqDto());
     }
 

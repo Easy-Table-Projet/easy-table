@@ -39,5 +39,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             "SET r.remainingTableCount = r.remainingTableCount - 1 " +
             "WHERE r.id = :restaurantId AND r.remainingTableCount > 0"
     )
-    int decreaseRemainingTableCount(@Param("restaurantId") Long restaurantId);
+    int updateRemainingTableCount(@Param("restaurantId") Long restaurantId);
 }
