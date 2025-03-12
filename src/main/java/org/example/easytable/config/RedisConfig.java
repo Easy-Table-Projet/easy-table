@@ -21,7 +21,7 @@ import static org.springframework.data.redis.stream.StreamMessageListenerContain
 
 @Configuration
 public class RedisConfig {
-    private static final String TOPIC_NAME = "reservation:create";
+    private static final String TOPIC_NAME = "restaurant:stream";
 
     @Value("${spring.data.redis.host:localhost}")
     private String host;
