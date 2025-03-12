@@ -2,8 +2,8 @@ package org.example.easytable.reservation.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.utils.SerializerUtil;
-import org.example.easytable.config.dto.ProducerOption;
-import org.example.easytable.config.dto.StreamsOption;
+import org.example.easytable.config.streams.ProducerOption;
+import org.example.easytable.config.streams.StreamsOption;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;

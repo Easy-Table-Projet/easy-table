@@ -1,8 +1,8 @@
 package org.example.easytable.queueing;
 
 import org.example.easytable.common.utils.SerializerUtil;
-import org.example.easytable.config.dto.ProducerOption;
-import org.example.easytable.config.dto.StreamsOption;
+import org.example.easytable.config.streams.ProducerOption;
+import org.example.easytable.config.streams.StreamsOption;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.repository.RedisMessagePublisherImpl;

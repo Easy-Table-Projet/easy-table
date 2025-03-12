@@ -1,4 +1,4 @@
-package org.example.easytable.config.dto;
+package org.example.easytable.config.streams;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
