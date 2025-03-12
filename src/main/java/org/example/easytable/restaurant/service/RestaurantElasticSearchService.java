@@ -33,19 +33,6 @@ public class RestaurantElasticSearchService {
     private final MemberRepository memberRepository;
     private final RestaurantElasticSearchRepository elasticSearchRepository;
 
-
-
-    public void warmUpElasticsearch() {
-        NativeQuery warmUpQuery = NativeQuery.builder()
-                .withQuery(QueryBuilders.matchAll().build()._toQuery()) // 모든 문서 조회
-                .withPageable(org.springframework.data.domain.PageRequest.of(0, 1)) // 첫 페이지 1개만 가져오기
-                .build();
-
-        elasticsearchTemplate.search(warmUpQuery, RestaurantDocument.class);
-
-        System.out.println("✅ Elasticsearch 워밍업 완료!");
-    }
-
     public Page<RestaurantResDto> searchByFilters(String name, String category, Pageable pageable) {
         BoolQuery.Builder boolQuery = QueryBuilders.bool();
 
@@ -53,7 +40,10 @@ public class RestaurantElasticSearchService {
         List<Query> filterQueries = new ArrayList<>();
 
         if (name != null && !name.isEmpty()) {
-            mustQueries.add(QueryBuilders.match().field("name").query(name).build()._toQuery());  // ✅ Query 변환 후 추가
+            mustQueries.add(QueryBuilders.multiMatch()
+                    .fields("name^2.5", "name.keyword^3", "name.ngram^1.5", "name.edge_ngram^1.5")
+                    .query(name)
+                    .build()._toQuery());
         }
 
         if (category != null && !category.isEmpty()) {
@@ -61,7 +51,9 @@ public class RestaurantElasticSearchService {
         }
 
         filterQueries.add(QueryBuilders.term().field("isDeleted").value(false).build()._toQuery());  // ✅ Query 변환 후 추가
-        boolQuery.must(mustQueries);
+        if (!mustQueries.isEmpty()) {
+            boolQuery.must(mustQueries);
+        }
         boolQuery.filter(filterQueries);
 
         Query query = boolQuery.build()._toQuery();
