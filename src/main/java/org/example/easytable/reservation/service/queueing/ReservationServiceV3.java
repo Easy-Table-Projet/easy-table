@@ -17,7 +17,7 @@ public class ReservationServiceV3 {
     private final MessagePublisher publisher;
     private final SinksRegistry sinkRegistry;
 
-    @Value("${stream.publisher.waiting_seconds:60}")
+    @Value("${redis.streams.producer.waiting-seconds:60}")
     private int waitingTime;
 
     public ReservationCreateResDto queueRequest(ReservationCreateReqDto dto) throws Exception {

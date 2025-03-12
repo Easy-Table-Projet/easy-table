@@ -27,8 +27,10 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port:6379}")
     private int port;
-    @Value("${stream.consumer_group.size:50}")
+    @Value("${redis.streams.consumer_group.size:50}")
     private int consumerGroupSize;
+    @Value("${redis.streams.consumer_group.poll-out-ms:10}")
+    private int pollOutMillis;
     @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
     private String password;
     @Value("${spring.data.redis.username:default}")
@@ -72,7 +74,7 @@ public class RedisConfig {
                 StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
                         .batchSize(consumerGroupSize)
                         .errorHandler(t -> System.err.println("Stream 소비 중 에러 발생: " + t.getMessage()))
-                        .pollTimeout(Duration.ofMillis(10))
+                        .pollTimeout(Duration.ofMillis(pollOutMillis))
                         .executor(executor)
                         .build();
 

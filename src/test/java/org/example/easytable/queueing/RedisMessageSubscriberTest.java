@@ -1,6 +1,8 @@
 package org.example.easytable.queueing;
 
 import org.example.easytable.common.utils.SerializerUtil;
+import org.example.easytable.config.dto.ConsumerGroupOption;
+import org.example.easytable.config.dto.StreamsOption;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
@@ -17,7 +19,6 @@ import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -40,15 +41,17 @@ public class RedisMessageSubscriberTest {
     @Mock
     private StreamMessageListenerContainer<String, MapRecord<String, String, String>> listenerContainer;
 
+    private final StreamsOption streamsOption = new StreamsOption("reservation-key", 1000);
+    private final ConsumerGroupOption consumerGroupOption = new ConsumerGroupOption(
+            "0", "reservation-group", "reservation-consumer");
+
     private RedisMessageSubscriber subscriber;
 
     @BeforeEach
     void setup() {
         subscriber = new RedisMessageSubscriber(
-                topic, sinkRegistry, serializerUtil, redisTemplate, reservationService, listenerContainer);
-        // @Value로 주입되는 필드 설정
-        ReflectionTestUtils.setField(subscriber, "key", "reservation-key");
-        ReflectionTestUtils.setField(subscriber, "maxStreamLength", 100L);
+                topic, sinkRegistry, serializerUtil, redisTemplate, reservationService,
+                listenerContainer, streamsOption, consumerGroupOption);
     }
 
     @Test

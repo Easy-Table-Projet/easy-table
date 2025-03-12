@@ -1,6 +1,8 @@
 package org.example.easytable.queueing;
 
 import org.example.easytable.common.utils.SerializerUtil;
+import org.example.easytable.config.dto.ProducerOption;
+import org.example.easytable.config.dto.StreamsOption;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
 import org.example.easytable.reservation.repository.RedisMessagePublisherImpl;
@@ -14,7 +16,6 @@ import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StreamOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -34,14 +35,15 @@ public class RedisMessagePublisherTest {
     @Mock
     private SerializerUtil<ReservationCreateReqDto> serializer;
 
+    private final StreamsOption streamsOption = new StreamsOption("reservation-key", 1000);
+    private final ProducerOption producerOption = new ProducerOption(5, 500);
+
     private RedisMessagePublisherImpl publisher;
 
     // 테스트용 maxStreamLength 및 key 값을 지정
     @BeforeEach
     void setup() {
-        publisher = new RedisMessagePublisherImpl(redisTemplate, topic, serializer);
-        ReflectionTestUtils.setField(publisher, "key", "reservation-key");
-        ReflectionTestUtils.setField(publisher, "maxStreamLength", 100L);
+        publisher = new RedisMessagePublisherImpl(redisTemplate, topic, serializer, streamsOption, producerOption);
     }
 
     @Test
