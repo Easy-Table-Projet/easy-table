@@ -1,10 +1,10 @@
 package org.example.easytable.reservation.service.queueing;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.repository.MessagePublisher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
@@ -13,7 +13,6 @@ import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ReservationServiceV3 {
     private final MessagePublisher publisher;
@@ -21,6 +20,11 @@ public class ReservationServiceV3 {
 
     @Value("${stream.publisher.waiting_seconds:60}")
     private int waitingTime;
+
+    public ReservationServiceV3(@Qualifier("kafka") MessagePublisher publisher, SinksRegistry sinkRegistry) {
+        this.publisher = publisher;
+        this.sinkRegistry = sinkRegistry;
+    }
 
     public ReservationCreateResDto queueRequest(ReservationCreateReqDto dto) throws Exception {
         Sinks.One<ReservationCreateResDto> sink = Sinks.one();

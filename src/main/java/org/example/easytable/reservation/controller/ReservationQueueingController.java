@@ -1,38 +1,38 @@
-package org.example.easytable.reservation.controller;
-
-import lombok.RequiredArgsConstructor;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
-import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
-import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
-import org.example.easytable.security.UserDetailsImpl;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.example.easytable.reservation.service.legacy.ReservationServiceV2;
-import reactor.core.publisher.Mono;
-
-@RestController
-@RequestMapping("/api/v2/reservations")
-@RequiredArgsConstructor
-public class ReservationQueueingController {
-    private final ReservationServiceV2 reservationService;
-
-    @PostMapping("/{restaurantId}")
-    public Mono<ReservationCreateResDto> createReservation(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable("restaurantId") Long restaurantId,
-            @RequestBody ReservationPostReqDto requestDto
-
-    ) {
-        Long memberId = userDetails.getId();
-
-        return reservationService.submitReservation(new ReservationCreateReqDto(
-                restaurantId, memberId, requestDto
-        ));
-    }
+//package org.example.easytable.reservation.controller;
+//
+//import lombok.RequiredArgsConstructor;
+//import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+//import org.example.easytable.reservation.dto.request.ReservationPostReqDto;
+//import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
+//import org.example.easytable.security.UserDetailsImpl;
+//import org.springframework.security.core.annotation.AuthenticationPrincipal;
+//import org.springframework.web.bind.annotation.PathVariable;
+//import org.springframework.web.bind.annotation.PostMapping;
+//import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RestController;
+//import org.example.easytable.reservation.service.legacy.ReservationServiceV2;
+//import reactor.core.publisher.Mono;
+//
+//@RestController
+//@RequestMapping("/api/v2/reservations")
+//@RequiredArgsConstructor
+//public class ReservationQueueingController {
+//    private final ReservationServiceV2 reservationService;
+//
+//    @PostMapping("/{restaurantId}")
+//    public Mono<ReservationCreateResDto> createReservation(
+//            @AuthenticationPrincipal UserDetailsImpl userDetails,
+//            @PathVariable("restaurantId") Long restaurantId,
+//            @RequestBody ReservationPostReqDto requestDto
+//
+//    ) {
+//        Long memberId = userDetails.getId();
+//
+//        return reservationService.submitReservation(new ReservationCreateReqDto(
+//                restaurantId, memberId, requestDto
+//        ));
+//    }
 
 //    @GetMapping("/{restaurantId}")
 //    public ResponseEntity<List<ReservationGetResDto>> getReservation(
@@ -83,4 +83,4 @@ public class ReservationQueueingController {
 //            throw CustomException.of(ErrorCode.TOO_MANY_REQUESTS);
 //        }
 //    }
-}
+//}
