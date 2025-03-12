@@ -1,7 +1,6 @@
 package org.example.easytable.reservation.service.queueing;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.repository.MessagePublisher;
@@ -14,7 +13,6 @@ import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ReservationServiceV3 {
     private final MessagePublisher publisher;
     private final SinksRegistry sinkRegistry;
@@ -31,7 +29,7 @@ public class ReservationServiceV3 {
         System.out.println("saved sink: " + sinkRegistry.getSink(dto.getRequestId()));
 
         try {
-            // 일정 시간 동안 Subscriber의 요청 처리 결과를 대기
+            // 일정 시간 동안 Subscriber의 요청 처리 결과를 blocking 대기
             return sink.asMono().block(Duration.ofSeconds(waitingTime));
         } catch (Exception e) {
             if (e.getCause() != null && e.getCause() instanceof TimeoutException) {
