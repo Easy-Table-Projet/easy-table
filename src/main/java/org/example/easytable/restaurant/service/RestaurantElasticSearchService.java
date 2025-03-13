@@ -50,7 +50,7 @@ public class RestaurantElasticSearchService {
             filterQueries.add(QueryBuilders.term().field("category").value(category).build()._toQuery());  // ✅ Query
         }
 
-        filterQueries.add(QueryBuilders.term().field("isDeleted").value(false).build()._toQuery());  // ✅ Query 변환 후 추가
+        filterQueries.add(QueryBuilders.term().field("is_deleted").value(false).build()._toQuery());  // ✅ Query 변환 후 추가
         if (!mustQueries.isEmpty()) {
             boolQuery.must(mustQueries);
         }
@@ -73,6 +73,7 @@ public class RestaurantElasticSearchService {
         return new PageImpl<>(restaurantList, pageable, searchHits.getTotalHits());
     }
 
+    // 테스트용 (DB에 넣으면 자동으로 엘라스틱 서치에도 저장됨)
     public RestaurantResDto createRestaurantEs(RestaurantCreateReqDto restaurantCreateReqDto) {
         Long memberId = AuthUtil.getId();
 

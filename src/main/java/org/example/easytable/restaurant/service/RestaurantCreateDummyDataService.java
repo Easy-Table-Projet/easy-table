@@ -80,14 +80,6 @@ public class RestaurantCreateDummyDataService {
 
         // 1. MySQL에 저장
         restaurantRepository.saveAll(restaurants);
-
-        // 2. 엘라스틱서치에 저장
-        List<RestaurantDocument> docs = restaurants.stream()
-                .map(RestaurantDocument::from)
-                .toList();
-
-        elasticSearchRepository.saveAll(docs);
-
     }
 
 }

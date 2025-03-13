@@ -9,6 +9,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=Asia/Seoul
 
   redis:
     image: redis:latest
@@ -42,3 +43,22 @@ services:
       - "${KIBANA_PORT}:5601"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT}
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.0
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+      - ./logstash/mysql-connector-java-8.0.26:/usr/share/logstash/config/mysql-connector-java-8.0.26
+    ports:
+      - "${LOGSTASH_PORT}:5044"
+    depends_on:
+      - mysql
+      - elasticsearch
+    environment:
+      - MYSQL_PORT=${LOGSTASH_MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - ELASTICSEARCH_PORT=${ELASTICSEARCH_PORT}

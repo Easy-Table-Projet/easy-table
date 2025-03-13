@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setting(settingPath = "restaurant-settings.json")
 public class RestaurantDocument {
     @Id
-    private String id;
+    private Long id;
 
     @MultiField(
             mainField = @Field(type = FieldType.Text, analyzer = "nori_analyzer", searchAnalyzer = "nori_analyzer"),
@@ -28,31 +28,27 @@ public class RestaurantDocument {
     @Field(type = FieldType.Text)
     private String address;
 
-    @Field(type = FieldType.Integer)
+    @Field(name = "max_table_count", type = FieldType.Integer)
     private int maxTableCount;
 
-    @Field(type = FieldType.Integer)
+    @Field(name = "remaining_table_count", type = FieldType.Integer)
     private int remainingTableCount;
 
     @Field(type = FieldType.Keyword)
     private String category;
 
-    @Field(type = FieldType.Long)
-    private Long ownerId;
-
-    @Field(type = FieldType.Boolean)
+    @Field(name = "is_deleted", type = FieldType.Boolean)
     private boolean isDeleted;
 
     @Builder
     public static RestaurantDocument from(Restaurant restaurant) {
         return RestaurantDocument.builder()
-                .id(LocalDateTime.now()+restaurant.getName())
+                .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .maxTableCount(restaurant.getMaxTableCount())
                 .remainingTableCount(restaurant.getRemainingTableCount())
                 .category(restaurant.getCategory().toString())
-                .ownerId(restaurant.getOwner().getId())
                 .build();
     }
 }

@@ -65,7 +65,6 @@ public class Restaurant extends BaseEntity {
         this.owner = owner;
     }
 
-
     public void softDelete() {
         this.isDeleted = true;
     }

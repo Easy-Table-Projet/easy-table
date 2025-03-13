@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
-    private final RestaurantElasticSearchRepository elasticSearchRepository;
     private static final String CACHE_KEY = "top100Restaurants";
     private final MemberRepository memberRepository;
 
@@ -48,8 +47,6 @@ public class RestaurantService {
                 .build();
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-        RestaurantDocument document = RestaurantDocument.from(savedRestaurant);
-        elasticSearchRepository.save(document);
         return RestaurantResDto.from(savedRestaurant);
     }
 
@@ -90,8 +87,6 @@ public class RestaurantService {
         validateOwnership(restaurant);
 
         restaurant.updateName(restaunrantNameUpdateReqDto.name());
-        RestaurantDocument document = RestaurantDocument.from(restaurant);
-        elasticSearchRepository.save(document);
         return RestaurantResDto.from(restaurant);
     }
 
@@ -100,7 +95,6 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 레스토랑입니다"));
         validateOwnership(restaurant);
-        elasticSearchRepository.deleteById(restaurant.getId());
         restaurant.softDelete();
     }
 
