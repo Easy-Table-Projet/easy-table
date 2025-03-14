@@ -1,24 +1,25 @@
 # EasyTable
 
-## 프로젝트 소개
+## 🚀 프로젝트 소개 
 <br>
-프로젝트 기간: 2025/02/10 ~ 2025/03/17
 
-![EasyTable](https://github.com/user-attachments/assets/53120b0a-f56c-4956-897c-50a05a028651)
+<b>📅 프로젝트 기간: 2025/02/10 ~ 2025/03/17</b>
 
-많은 사용자들의 동시 예약을 가정한 식당 예약 서비스
+<img src="https://github.com/user-attachments/assets/53120b0a-f56c-4956-897c-50a05a028651" height="500"><br>
 
-## Project Goals
+<b>📌 많은 사용자들의 동시 예약을 가정한 식당 예약 서비스</b>
+
+## 🎯 Project Goals
 <br>
-<b>1. 예약이 1,000건 정도 몰리는 경우에도 응답속도가 안정적으로 나오도록 할 것</b><br>
-<b>2. 메뉴 이름 및 지역별로 빠르고 정확한 식당 검색이 가능하도록 할 것 </b><br>
+<b>✅ 1. 예약이 1,000건 정도 몰리는 경우에도 응답속도가 안정적으로 나오도록 할 것</b><br>
+<b>🔍2. 메뉴 이름 및 지역별로 빠르고 정확한 식당 검색이 가능하도록 할 것 </b><br>
 
-## Infra Architecture
+## 🏗️ Infra Architecture 
 <br>
 
 ![DEV_Infrastructure](https://github.com/user-attachments/assets/6d2684fb-506f-466d-acc4-0e309e7d53ec)
 
-## ERD
+## 📊 ERD
 ```mermaid
 erDiagram
     Member {
@@ -61,39 +62,45 @@ erDiagram
 ```
 
 
-## 기술 스택
+## 📚 기술 스택 
 <br>
+
+☕ **Backend**
+<br><br>
 <img src="https://img.shields.io/badge/Java-007396">
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F">
 <img src="https://img.shields.io/badge/Spring Security-6DB33F">
 <img src="https://img.shields.io/badge/JPA-6DB33F">
 <img src="https://img.shields.io/badge/Spring Actuator-6DB33F">
 
+🗄 **Database & Caching**
+<br><br>
 <img src="https://img.shields.io/badge/MySQL-4479A1">
 <img src="https://img.shields.io/badge/Redis-FF4438">
 <img src="https://img.shields.io/badge/ElasticSearch-FED10A">
 
+📊 **Monitoring & Logging**
+<br><br>
 <img src="https://img.shields.io/badge/Prometheus-E6522C">
 <img src="https://img.shields.io/badge/Grafana-F48727">
 <img src="https://img.shields.io/badge/Cloudwatch-759C3E">
-
 <img src="https://img.shields.io/badge/Logstash-3EBEB0">
 
-## 주요 기능
+## ⚡ 주요 기능 
 <br>
 
-### 식당 예약 기능
+### 🍽️ 식당 예약 기능 
 
-- 사용자가 식당 예약 요청 시 동시성을 지키며 식당의 남은 테이블 수를 관리할 수 있도록 구현
-- Redis Streams 기반 대기열로 관리해 요청이 몰릴 경우에도 대처할 수 있도록 구현
+- 사용자가 식당 예약 요청 시 **동시성을 지키며** 식당의 남은 테이블 수를 관리할 수 있도록 구현
+- **Redis Streams 기반 대기열**로 관리해 요청이 몰릴 경우에도 대처할 수 있도록 구현
 
-### 식당 검색 기능
-- 검색어, 분야 기반 검색 기능의 속도 향상을 위해 ElasticSerach 도입
-- MySQL과의 동기화로 다소 부족한 쓰기 성능을 커버하도록 구현
-- 또한 ElasticSearch를 통해 검색어와 유사도가 가장 높은 이름의 가게들이 먼저 조회되도록 구현
+### 🔍 식당 검색 기능
+- 검색어, 분야 기반 **검색 기능의 속도 향상**을 위해 **ElasticSerach 도입**
+- **MySQL과의 동기화**로 ElasticSearch의 다소 **부족한 쓰기 성능 보완**
+- **ElasticSearch**를 통한 검색어의 **유사도 기반 검색** 구현
 
-### 인기 식당 조회 기능
-- Redis에 예약이 많은 순서대로 식당을 조회한 결과를 캐싱하도록 구현
+### 🔥 인기 식당 조회 기능 
+- 예약이 많은 순서대로 식당을 조회한 결과를 **Redis에 캐싱**하도록 구현
 - 캐시는 기본적으로 60분마다 초기화되도록 구현
 
 
@@ -102,25 +109,32 @@ erDiagram
 
 추가 예정
 
-## Troubleshooting
+## 🛠️ Troubleshooting 
 
-[1. Tocmat 및 DB 튜닝 결과](https://www.notion.so/teamsparta/Tomcat-DB-1b32dc3ef514809fadefd7f1a4e2c6a5?pvs=4)
+[1. Tocmat 및 DB 튜닝 결과](https://www.notion.so/teamsparta/Tomcat-DB-1b32dc3ef514809fadefd7f1a4e2c6a5?pvs=4)<br>
+[2. grafana 데이터 비대화](https://www.notion.so/teamsparta/grafana-1b52dc3ef514801a8adcecf76f7239dc)<br>
+[3. ]()<br>
+[4. ]()<br>
 
 추가 예정
 
-## 팀원 소개
+## 팀원 소개 👨‍💻
 <br>
 
-|이름 |역할 |Github |
-|-------|------|-------|
-|황서호|팀장|https://github.com/seoho1|
-|김형준|부팀장|https://github.com/mikejigglypuff|
-|문규민|팀원|https://github.com/2020-byte|
-|김학산|팀원|https://github.com/KIMHAKSAN|
-|김호진|팀원|https://github.com/Hojin02|
+| 🧑🏻‍💼 이름 | 💼 역할 | 🔗 Github                         |
+|-------|-------|-----------------------------------|
+| 황서호   | 팀장    | https://github.com/seoho1         |
+| 김형준   | 부팀장   | https://github.com/mikejigglypuff |
+| 문규민   | 팀원    | https://github.com/2020-byte      |
+| 김학산   | 팀원    | https://github.com/KIMHAKSAN      |
+| 김호진   | 팀원    | https://github.com/Hojin02        |
 
-## 추가 개선점
+## 추가 개선점 및 아쉬운 점
 <br>
+
+- Restaurant 별로 대기열 Stream을 나눠 관리되도록 구현하기(진행 중)
+- 실제 서비스를 최소 베타 테스트처럼 운영하며 모니터링 및 스케일링 진행하기
+- 
 
 추가 예정
 
