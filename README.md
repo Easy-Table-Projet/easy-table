@@ -4,6 +4,8 @@
 <br>
 프로젝트 기간: 2025/02/10 ~ 2025/03/17
 
+![EasyTable](https://github.com/user-attachments/assets/53120b0a-f56c-4956-897c-50a05a028651)
+
 많은 사용자들의 동시 예약을 가정한 식당 예약 서비스
 
 ## Project Goals
@@ -13,7 +15,51 @@
 
 ## Infra Architecture
 <br>
-이미지 추가할 것
+
+![DEV_Infrastructure](https://github.com/user-attachments/assets/6d2684fb-506f-466d-acc4-0e309e7d53ec)
+
+## ERD
+```mermaid
+erDiagram
+    Member {
+    bigint id PK "고유 식별자"
+    varchar email  "이메일"
+    varchar name "이름"
+    varchar password "비밀번호"
+    varchar address "주소"
+    enum user_type "OWNER/USER"
+    datetime created_at "회원가입 시간"
+    datetime updated_at "정보변경 시간"
+    boolean is_deleted "삭제되면 True, 아니면 False"
+    }
+    
+    Restaurant {
+    bigint id PK "고유 식별자"
+    varchar name "식당이름"
+    varchar address "가게 주소"
+    int valid_seat_count "예약 가능한 좌석 수"
+    datetime created_at "등록 시간"
+    datetime updated_at "수정 시간"
+    boolean is_deleted "삭제되면 True, 아니면 False"
+    }
+    
+    Reservations{
+    bigint id PK
+    bigint member_id FK
+    bigint resaurant_id FK
+    datetime reservation_time
+    enum status
+    int guest_count "예약자 수"
+    datetime created_at "예약 요청 시간"
+    datetime updated_at "정보변경 시간"
+    boolean is_deleted "삭제되면 True, 아니면 False"
+    }
+    
+    Member ||--o{ Restaurant : " "
+    Member ||--o{ Reservations : "예약한다"
+    Restaurant ||--o{ Reservations : "예약 받는다"
+```
+
 
 ## 기술 스택
 <br>
@@ -42,10 +88,13 @@
 - Redis Streams 기반 대기열로 관리해 요청이 몰릴 경우에도 대처할 수 있도록 구현
 
 ### 식당 검색 기능
-- 추가 예정
+- 검색어, 분야 기반 검색 기능의 속도 향상을 위해 ElasticSerach 도입
+- MySQL과의 동기화로 다소 부족한 쓰기 성능을 커버하도록 구현
+- 또한 ElasticSearch를 통해 검색어와 유사도가 가장 높은 이름의 가게들이 먼저 조회되도록 구현
 
 ### 인기 식당 조회 기능
-- 추가 예정
+- Redis에 예약이 많은 순서대로 식당을 조회한 결과를 캐싱하도록 구현
+- 캐시는 기본적으로 60분마다 초기화되도록 구현
 
 
 ## 기능 별 최종 성능
@@ -54,7 +103,6 @@
 추가 예정
 
 ## Troubleshooting
-<br>
 
 [1. Tocmat 및 DB 튜닝 결과](https://www.notion.so/teamsparta/Tomcat-DB-1b32dc3ef514809fadefd7f1a4e2c6a5?pvs=4)
 
