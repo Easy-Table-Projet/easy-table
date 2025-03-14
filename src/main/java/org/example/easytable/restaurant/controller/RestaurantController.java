@@ -48,7 +48,7 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.getRestaurantById(restaurantId));
     }
 
-    @GetMapping
+    @GetMapping("mysqlGetTest")
     public ResponseEntity<Page<RestaurantResDto>> getAllRestaurantByTitleAndCategory(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String category,
@@ -56,7 +56,7 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.getAllRestaurantByTitleAndCategory(
                 name, category,pageable));
     }
-    @GetMapping("/es")
+    @GetMapping
     public ResponseEntity<Page<RestaurantResDto>> getAllRestaurantByTitleAndCategoryInEs(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String category,
