@@ -116,20 +116,23 @@ erDiagram
 <br>
 
 ### 식당 예약
-<img width="521" alt="Image" src="https://github.com/user-attachments/assets/1d264808-d68d-4565-af9a-5001fc21924e" />
-
+<img width="528" alt="Image" src="https://github.com/user-attachments/assets/37948e4d-2a9b-4936-b3b6-4e8e8e561f9e" /><br>
+- **분산 lock의 한계점 및 분산/비관적 lock의  느린 Resp Time를 극복하기 위해 원자적 쿼리를 도입했고, 성공적으로 최적화 완료**<br>
+    - 다만 비관적 lock이 추가적인 오버헤드가 없기에 근소하게 성능 측면에서 우위를 점하고 있다.<br>
+- **대기열의 도입은 두 방식 모두 성능의 향상을 얻진 못했다.**<br>
+    - 대기열의 경우 요청이 Redis/Kafka를 거쳐야 한다는 오버헤드를 감수하면서 Spring이 받아들일 수 있는 요청의 한계를 확장하기 위해 도입<br>
+    - 그런 점을 고려했을 때 원자적 쿼리 방식과 거의 차이가 없는 Kafka가 매우 뛰어나다고 판단했다.<br>
+    - 다만 비용 문제 등으로 인해 Redis Streams를 선택하게 되었다.<br>
 
 ### 식당 검색
-
+<img width="544" alt="Image" src="https://github.com/user-attachments/assets/60064646-3dde-4752-94d6-7a9fb39d826e" /><br>
+- **전반적으로 검색 성능 측면에서 ElasticSearch 도입 이유가 명확하다고 생각한다.**
 
 ## 🛠️ Troubleshooting 
 
 [1. Tocmat 및 DB 튜닝 결과](https://www.notion.so/teamsparta/Tomcat-DB-1b32dc3ef514809fadefd7f1a4e2c6a5?pvs=4)<br>
 [2. grafana 데이터 비대화](https://www.notion.so/teamsparta/grafana-1b52dc3ef514801a8adcecf76f7239dc)<br>
 [3. Nori 너! 한글 분석기라며! 근데 외글애?](https://www.notion.so/teamsparta/Nori-1b22dc3ef51480219eadd7f33e3b0ce9)<br>
-[4. ]()<br>
-
-추가 예정
 
 ## 팀원 소개 👨‍💻
 <br>
@@ -145,11 +148,9 @@ erDiagram
 ## 추가 개선점 및 아쉬운 점
 <br>
 
-- *Restaurant 별로 대기열 Stream을 나눠 관리되도록 구현하기(진행 중)*
-- 실제 서비스를 최소 베타 테스트처럼 운영하며 모니터링 및 스케일링 진행하면 좋을 것 같다.
-- 사용자 위치 기반 식당 검색 및 가게 조회도 구현되면 좋을 것 같다.
+- *Restaurant 별로 대기열 Stream을 나눠 관리되도록 구현하기(진행 중)*<br>
+- 실제 서비스를 최소 베타 테스트처럼 운영하며 모니터링 및 스케일링 진행하면 좋을 것 같다.<br>
+- 사용자 위치 기반 식당 검색 및 가게 조회도 구현되면 좋을 것 같다.<br>
 - 현재 logstash로 수행되는 업데이트 외에도 추가적으로 테이블 full scan 후 ElasticSearch에 업데이트하도록 구현하면 좋을 것 같다.
-- 
 
-추가 예정
 
