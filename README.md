@@ -115,7 +115,12 @@ erDiagram
 ## 기능 별 최종 성능
 <br>
 
-추가 예정
+### 식당 예약
+<img width="521" alt="Image" src="https://github.com/user-attachments/assets/1d264808-d68d-4565-af9a-5001fc21924e" />
+
+
+### 식당 검색
+
 
 ## 🛠️ Troubleshooting 
 
