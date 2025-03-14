@@ -5,7 +5,7 @@
 
 <b>📅 프로젝트 기간: 2025/02/10 ~ 2025/03/17</b>
 
-<img src="https://github.com/user-attachments/assets/53120b0a-f56c-4956-897c-50a05a028651" height="500"><br>
+<img src="https://github.com/user-attachments/assets/9f60e743-728a-4283-b275-78f02fab48e4" height="500"><br>
 
 <b>📌 많은 사용자들의 동시 예약을 가정한 식당 예약 서비스</b>
 
@@ -17,7 +17,15 @@
 ## 🏗️ Infra Architecture 
 <br>
 
-![DEV_Infrastructure](https://github.com/user-attachments/assets/6d2684fb-506f-466d-acc4-0e309e7d53ec)
+![DEV_Infrastructure](https://github.com/user-attachments/assets/ab3ff970-409e-4d06-a67a-35b5300eb27b)
+
+### 🖥️ Monitoring Architecture
+
+- **CloudWatch**
+  ![Cloudwatch_Infra](https://github.com/user-attachments/assets/cbda51f5-bdd3-4ff9-8680-edd3106e6d83)
+
+- **K6**
+  ![K6_Infra](https://github.com/user-attachments/assets/362e7885-acaf-4e77-ab2e-baaa248eddcc)
 
 ## 📊 ERD
 ```mermaid
@@ -113,7 +121,7 @@ erDiagram
 
 [1. Tocmat 및 DB 튜닝 결과](https://www.notion.so/teamsparta/Tomcat-DB-1b32dc3ef514809fadefd7f1a4e2c6a5?pvs=4)<br>
 [2. grafana 데이터 비대화](https://www.notion.so/teamsparta/grafana-1b52dc3ef514801a8adcecf76f7239dc)<br>
-[3. ]()<br>
+[3. Nori 너! 한글 분석기라며! 근데 외글애?](https://www.notion.so/teamsparta/Nori-1b22dc3ef51480219eadd7f33e3b0ce9)<br>
 [4. ]()<br>
 
 추가 예정
@@ -132,8 +140,10 @@ erDiagram
 ## 추가 개선점 및 아쉬운 점
 <br>
 
-- Restaurant 별로 대기열 Stream을 나눠 관리되도록 구현하기(진행 중)
-- 실제 서비스를 최소 베타 테스트처럼 운영하며 모니터링 및 스케일링 진행하기
+- *Restaurant 별로 대기열 Stream을 나눠 관리되도록 구현하기(진행 중)*
+- 실제 서비스를 최소 베타 테스트처럼 운영하며 모니터링 및 스케일링 진행하면 좋을 것 같다.
+- 사용자 위치 기반 식당 검색 및 가게 조회도 구현되면 좋을 것 같다.
+- 현재 logstash로 수행되는 업데이트 외에도 추가적으로 테이블 full scan 후 ElasticSearch에 업데이트하도록 구현하면 좋을 것 같다.
 - 
 
 추가 예정
