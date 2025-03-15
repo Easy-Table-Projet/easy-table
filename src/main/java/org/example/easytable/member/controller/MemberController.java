@@ -19,19 +19,6 @@ public class MemberController {
 	private final MemberService memberService;
 
 
-	@GetMapping("/me")
-	public ResponseEntity<MeResDto> getAuthenticatedUserInfo() {
-		// 인증된 사용자의 ID와 역할 목록을 가져옵니다.
-		Long userId = AuthUtil.getId();
-		List<String> userRoles = AuthUtil.getRoles();
-
-		// DTO를 사용하여 응답 반환
-		MeResDto response = MeResDto.of(userId, userRoles);
-
-		return ResponseEntity.ok(response);
-	}
-
-
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
 		memberService.deleteUser(id);

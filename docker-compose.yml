@@ -57,7 +57,7 @@ services:
       - mysql
       - elasticsearch
     environment:
-      - MYSQL_PORT=${LOGSTASH_MYSQL_PORT}
+      - MYSQL_PORT=${MYSQL_PORT}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}

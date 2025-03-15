@@ -6,13 +6,14 @@ import org.example.easytable.auth.dto.request.LoginReqDto;
 import org.example.easytable.auth.dto.request.RegisterReqDto;
 import org.example.easytable.auth.dto.response.RegisterResDto;
 import org.example.easytable.auth.service.AuthService;
+import org.example.easytable.common.utils.AuthUtil;
+import org.example.easytable.member.dto.response.MeResDto;
 import org.example.easytable.member.entity.Member;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,6 +44,19 @@ public class AuthController {
 
         // 응답 반환
         RegisterResDto response = RegisterResDto.of(member.getEmail());
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<MeResDto> getAuthenticatedUserInfo() {
+        // 인증된 사용자의 ID와 역할 목록을 가져옵니다.
+        Long userId = AuthUtil.getId();
+        List<String> userRoles = AuthUtil.getRoles();
+
+        // DTO를 사용하여 응답 반환
+        MeResDto response = MeResDto.of(userId, userRoles);
 
         return ResponseEntity.ok(response);
     }
