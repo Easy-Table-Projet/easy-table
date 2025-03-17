@@ -38,7 +38,8 @@ public class RestaurantLockingService {
         int updated = restaurantRepository.updateRemainingTableCount(restaurantId);
 
         if (updated <= 0) {
-            throw new IllegalArgumentException("해당 식당이 없거나 여유 테이블이 없습니다.");
+            // IllegalArgumentException 대신 CustomException 사용
+            throw CustomException.of(ErrorCode.BAD_REQUEST, "현재 여유 테이블이 없습니다.");
         }
 
         // 수동으로 flush()를 호출해 DB와 동기화
