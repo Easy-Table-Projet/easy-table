@@ -1,20 +1,15 @@
 package org.example.easytable.config;
 
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 
@@ -32,8 +27,10 @@ public class RedisConfig {
     private String host;
     @Value("${spring.data.redis.port:6379}")
     private int port;
-    @Value("${stream.consumer_group.size:50}")
+    @Value("${redis.streams.consumer_group.size:50}")
     private int consumerGroupSize;
+    @Value("${redis.streams.consumer_group.poll-out-ms:10}")
+    private int pollOutMillis;
     @Value("${spring.data.redis.password:}")  // ✅ 기본값 유지 (비밀번호 없을 경우 빈 문자열)
     private String password;
     @Value("${spring.data.redis.username:default}")
@@ -68,14 +65,6 @@ public class RedisConfig {
     }
 
     @Bean
-    public ReactiveRedisTemplate<String, ReservationCreateReqDto> createReservationTemplate(
-            LettuceConnectionFactory lettuceConnectionFactory
-    ) {
-        return setupReactiveRedisTemplate(lettuceConnectionFactory,
-                new Jackson2JsonRedisSerializer<>(ReservationCreateReqDto.class));
-    }
-
-    @Bean
     public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer(
             RedisConnectionFactory redisConnectionFactory
     ) {
@@ -85,7 +74,7 @@ public class RedisConfig {
                 StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
                         .batchSize(consumerGroupSize)
                         .errorHandler(t -> System.err.println("Stream 소비 중 에러 발생: " + t.getMessage()))
-                        .pollTimeout(Duration.ofMillis(10))
+                        .pollTimeout(Duration.ofMillis(pollOutMillis))
                         .executor(executor)
                         .build();
 
@@ -103,23 +92,5 @@ public class RedisConfig {
         template.setDefaultSerializer(serializer);
 
         return template;
-    }
-
-    private <T> ReactiveRedisTemplate<String, T> setupReactiveRedisTemplate(
-            ReactiveRedisConnectionFactory factory,
-            Jackson2JsonRedisSerializer<T> jsonSerializer
-    ) {
-        RedisSerializer<String> stringSerializer = new StringRedisSerializer();
-
-        RedisSerializationContext.RedisSerializationContextBuilder<String, T> builder =
-                RedisSerializationContext.newSerializationContext(stringSerializer);
-
-        RedisSerializationContext<String, T> context = builder
-                .value(jsonSerializer)
-                .hashKey(stringSerializer)
-                .hashValue(jsonSerializer)
-                .build();
-
-        return new ReactiveRedisTemplate<>(factory, context);
     }
 }

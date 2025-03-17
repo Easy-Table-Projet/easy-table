@@ -2,8 +2,9 @@ package org.example.easytable.reservation.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.example.easytable.common.utils.SerializerUtil;
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
-import org.springframework.beans.factory.annotation.Value;
+import org.example.easytable.config.streams.ProducerOption;
+import org.example.easytable.config.streams.StreamsOption;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -18,22 +19,16 @@ import static org.springframework.data.redis.connection.RedisStreamCommands.XAdd
 @Repository
 @RequiredArgsConstructor
 public class RedisMessagePublisherImpl implements MessagePublisher {
-    private static final int MAX_ATTEMPTS = 5;
-    private static final long RETRY_DELAY_MS = 500;
-
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic topic;
-    private final SerializerUtil<ReservationCreateReqDto> serializer;
-
-    @Value("${mapRecord-key:reservation-key}")
-    private String key;
-    @Value("${max-stream-length:1000}")
-    private long maxStreamLength;
+    private final SerializerUtil<ReservationCreateReqMessage> serializer;
+    private final StreamsOption streamsOption;
+    private final ProducerOption producerOption;
 
     @Override
-    public void publish(ReservationCreateReqDto dto) throws TimeoutException {
+    public void publish(ReservationCreateReqMessage dto) throws TimeoutException {
         int attempt = 0;
-        while (attempt < MAX_ATTEMPTS) {
+        while (attempt < producerOption.maxAttempts()) {
             try {
                 publishToStream(dto);
                 return;
@@ -46,12 +41,14 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
         throw new TimeoutException();
     }
 
-    private void publishToStream(ReservationCreateReqDto dto) {
-        String serialized = serializer.serialize(dto);
-        Map<String, String> message = Collections.singletonMap(key, serialized);
+    private XAddOptions createXAddOptions() {
+        return XAddOptions.maxlen(streamsOption.maxStreamLength());
+    }
 
-        XAddOptions options = XAddOptions.maxlen(maxStreamLength);
-        Object addedId = redisTemplate.opsForStream().add(topic.getTopic(), message, options);
+    private void publishToStream(ReservationCreateReqMessage dto) {
+        Map<String, String> message = Collections.singletonMap(streamsOption.key(), serializer.serialize(dto));
+
+        Object addedId = redisTemplate.opsForStream().add(topic.getTopic(), message, createXAddOptions());
 
         if (addedId == null) {
             throw new RedisSystemException("스트림이 가득 차서 메시지를 추가할 수 없습니다.", new RuntimeException());
@@ -60,7 +57,7 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
 
     private void sleepThread() {
         try {
-            Thread.sleep(RETRY_DELAY_MS);
+            Thread.sleep(producerOption.retryDelayMillis());
         } catch (InterruptedException e) {
             System.out.println("thread interrupted");
         }

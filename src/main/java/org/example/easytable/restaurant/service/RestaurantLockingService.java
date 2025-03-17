@@ -35,7 +35,7 @@ public class RestaurantLockingService {
 
     @Transactional
     public Restaurant atomicDecreaseRemainingTableCount(Long restaurantId) {
-        int updated = restaurantRepository.decreaseRemainingTableCount(restaurantId);
+        int updated = restaurantRepository.updateRemainingTableCount(restaurantId);
 
         if (updated <= 0) {
             throw new IllegalArgumentException("해당 식당이 없거나 여유 테이블이 없습니다.");

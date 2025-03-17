@@ -1,9 +1,10 @@
 package org.example.easytable.reservation.repository;
 
-import org.example.easytable.reservation.dto.request.ReservationCreateReqDto;
+import org.example.easytable.reservation.dto.request.ReservationCreateReqMessage;
 
 import java.util.concurrent.TimeoutException;
 
+// 여러 Message queue/event streaming 기술들을 도입해보기 위한 추상화
 public interface MessagePublisher {
-    public void publish(ReservationCreateReqDto dto) throws TimeoutException;
+    void publish(ReservationCreateReqMessage dto) throws TimeoutException;
 }
