@@ -48,11 +48,14 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
     private void publishToStream(ReservationCreateReqMessage dto) {
         Map<String, String> message = Collections.singletonMap(streamsOption.key(), serializer.serialize(dto));
 
-        Object addedId = redisTemplate.opsForStream().add(topic.getTopic(), message, createXAddOptions());
+        String streamKey = topic.getTopic() + ":" + dto.getRestaurantId();
+        Object addedId = redisTemplate.opsForStream().add(streamKey , message, createXAddOptions());
 
         if (addedId == null) {
             throw new RedisSystemException("스트림이 가득 차서 메시지를 추가할 수 없습니다.", new RuntimeException());
         }
+
+        System.out.println("finished publishing");
     }
 
     private void sleepThread() {

@@ -23,6 +23,9 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
             @Param("category") String category,
             Pageable pageable);
 
+    @Query("SELECT r.id FROM Restaurant r")
+    List<Long> findAllRestaurantIds();
+
     @Query("""
     SELECT r FROM Restaurant r
     LEFT JOIN r.reservations res

@@ -43,7 +43,7 @@ public class ReservationQueueingService {
     private One<ReservationCreateResDto> addSink(ReservationCreateReqMessage dto) {
         One<ReservationCreateResDto> sink = Sinks.one();
         sinkRegistry.registerSink(dto.getRequestId(), sink);
-        log.debug("saved sink: {}", sinkRegistry.getSink(dto.getRequestId()));
+        System.out.println("saved sink: " + sinkRegistry.getSink(dto.getRequestId()));
         return sink;
     }
 }

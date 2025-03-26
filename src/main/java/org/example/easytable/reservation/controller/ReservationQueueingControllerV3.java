@@ -23,6 +23,7 @@ public class ReservationQueueingControllerV3 {
             @RequestBody ReservationPostReqDto requestDto
     ) throws Exception {
         Long memberId = userDetails.getId();
+        System.out.println("restaurantId: " + restaurantId);
 
         return ResponseEntity.ok(reservationService.publishRequest(new ReservationCreateReqMessage(
                 restaurantId, memberId, requestDto
