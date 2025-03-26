@@ -3,8 +3,6 @@ package org.example.easytable.restaurant.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.example.easytable.common.aop.annotation.LockKey;
-import org.example.easytable.common.aop.annotation.RedissonLock;
 import org.example.easytable.exception.CustomException;
 import org.example.easytable.exception.ErrorCode;
 import org.example.easytable.restaurant.entity.Restaurant;
@@ -22,9 +20,8 @@ public class RestaurantLockingService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @RedissonLock(prefix = "restaurant:")
     @Transactional
-    public Restaurant decreaseRemainingTableCountWithLock(@LockKey Long restaurantId) {
+    public Restaurant decreaseRemainingTableCountWithLock(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> CustomException.of(ErrorCode.NOT_FOUND, "존재하지 않는 식당입니다"));
 
