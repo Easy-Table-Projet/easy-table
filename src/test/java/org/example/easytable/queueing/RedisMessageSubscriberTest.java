@@ -1,5 +1,13 @@
 package org.example.easytable.queueing;
 
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.config.streams.ConsumerGroupOption;
 import org.example.easytable.config.streams.StreamsOption;
@@ -16,15 +24,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StreamOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class RedisMessageSubscriberTest {
@@ -41,7 +45,7 @@ public class RedisMessageSubscriberTest {
     @Mock
     private StreamMessageListenerContainer<String, MapRecord<String, String, String>> listenerContainer;
 
-    private final StreamsOption streamsOption = new StreamsOption("reservation-key", 1000);
+    private final StreamsOption streamsOption = new StreamsOption("reservation-key", 1000, 5);
     private final ConsumerGroupOption consumerGroupOption = new ConsumerGroupOption(
             "0", "reservation-group", "reservation-consumer");
 
@@ -68,7 +72,7 @@ public class RedisMessageSubscriberTest {
                 .build();
 
         ReservationCreateResDto resDto = new ReservationCreateResDto(
-            request.getRequestId(),
+                request.getRequestId(),
                 1L,
                 2L,
                 1L,
@@ -76,18 +80,24 @@ public class RedisMessageSubscriberTest {
                 ReservationStatus.CONFIRMED
         );
 
-        // when
-        when(serializerUtil.deserialize(serializedData)).thenReturn(request);
-        when(reservationService.createReservation(request)).thenReturn(resDto);
+        @SuppressWarnings("unchecked")
+        StreamOperations<String, String, String> streamOps = mock(StreamOperations.class);
+        doReturn(streamOps).when(redisTemplate).opsForStream();
 
         @SuppressWarnings("unchecked")
         MapRecord<String, String, String> message = mock(MapRecord.class);
         when(message.getValue()).thenReturn(valueMap);
+        when(message.getStream()).thenReturn("reservation-create-1");
+        when(message.getId()).thenReturn(RecordId.autoGenerate());
+
+        // when
+        when(serializerUtil.deserialize(serializedData)).thenReturn(request);
+        when(reservationService.createReservation(request)).thenReturn(resDto);
 
         subscriber.onMessage(message);
 
         // then
-        // sinkRegistry.completeSink()가 올바른 파라미터로 호출되었는지 검증
         verify(sinkRegistry).completeSink(request.getRequestId(), resDto);
+        verify(redisTemplate.opsForStream()).acknowledge("reservation-create-1", "reservation-group", message.getId());
     }
 }

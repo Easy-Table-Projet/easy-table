@@ -9,5 +9,8 @@ public record StreamsOption(
         String key,
 
         @Value("${redis.streams.max-stream-length:1000}")
-        long maxStreamLength
+        long maxStreamLength,
+
+        @Value("${redis.streams.count:5}")
+        int streamCount
 ) { }
