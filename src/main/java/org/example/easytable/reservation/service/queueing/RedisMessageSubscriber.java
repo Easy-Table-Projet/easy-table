@@ -1,8 +1,5 @@
 package org.example.easytable.reservation.service.queueing;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.common.utils.SerializerUtil;
@@ -25,6 +22,10 @@ import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.Subscription;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -70,6 +71,7 @@ public class RedisMessageSubscriber implements
 
         try {
             ReservationCreateResDto response = reservationService.createReservation(request);
+            log.debug("completing {}", request.getRequestId());
             sinkRegistry.completeSink(request.getRequestId(), response);
             redisTemplate.opsForStream().acknowledge(message.getStream(), groupOption.groupName(), message.getId());
         } catch (Exception e) {

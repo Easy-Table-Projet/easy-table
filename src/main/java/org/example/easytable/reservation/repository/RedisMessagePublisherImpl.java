@@ -1,11 +1,7 @@
 package org.example.easytable.reservation.repository;
 
-import static org.springframework.data.redis.connection.RedisStreamCommands.XAddOptions;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.common.utils.SerializerUtil;
 import org.example.easytable.config.streams.ProducerOption;
 import org.example.easytable.config.streams.StreamsOption;
@@ -16,8 +12,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
+import static org.springframework.data.redis.connection.RedisStreamCommands.XAddOptions;
+
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class RedisMessagePublisherImpl implements MessagePublisher {
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic topic;
@@ -49,8 +52,11 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
     private void publishToStream(ReservationCreateReqMessage dto) {
         Map<String, String> message = Collections.singletonMap(streamsOption.key(), serializer.serialize(dto));
 
+        String streamKey = createStreamKey(dto.getRestaurantId());
+
         Object addedId = redisTemplate.opsForStream().add(
-                createStreamKey(dto.getRestaurantId()) , message, createXAddOptions());
+                streamKey, message, createXAddOptions());
+        log.info("published message into {}", streamKey);
 
         if (addedId == null) {
             throw new RedisSystemException("스트림이 가득 차서 메시지를 추가할 수 없습니다.", new RuntimeException());
@@ -68,9 +74,7 @@ public class RedisMessagePublisherImpl implements MessagePublisher {
     }
 
     private String createStreamKey(Long restaurantId) {
-        long restaurantCount = restaurantRepository.count();
-        int streamNumber = (int) Math.ceil(
-                (double) restaurantId * streamsOption.streamCount() / restaurantCount);
+        long streamNumber = restaurantId % streamsOption.streamCount() + 1;
         return "reservation-create-" + streamNumber;
     }
 }
