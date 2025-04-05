@@ -1,9 +1,5 @@
 package org.example.easytable.reservation.service.queueing;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.common.utils.SerializerUtil;
@@ -16,13 +12,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.RedisSystemException;
-import org.springframework.data.redis.connection.stream.Consumer;
-import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.PendingMessage;
-import org.springframework.data.redis.connection.stream.PendingMessages;
-import org.springframework.data.redis.connection.stream.ReadOffset;
-import org.springframework.data.redis.connection.stream.RecordId;
-import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -32,6 +22,7 @@ import org.springframework.data.redis.stream.Subscription;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,10 +77,11 @@ public class RedisMessageSubscriber implements
             ReservationCreateResDto response = reservationService.createReservation(request);
             log.debug("completing {}", request.getRequestId());
             sinkRegistry.completeSink(request.getRequestId(), response);
-            redisTemplate.opsForStream().acknowledge(message.getStream(), groupOption.groupName(), message.getId());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             sinkRegistry.completeSinkExceptionally(request.getRequestId(), e);
+        } finally {
+            redisTemplate.opsForStream().acknowledge(message.getStream(), groupOption.groupName(), message.getId());
         }
     }
 
@@ -118,11 +110,12 @@ public class RedisMessageSubscriber implements
     }
 
     private void handlePendingMessages(String streamKey) {
+        log.debug("{} pending 처리 중", streamKey);
         String group = groupOption.groupName();
         String consumer = groupOption.consumerName();
 
         PendingMessages pendingMessages = redisTemplate.opsForStream().pending(
-                streamKey, Consumer.from(group, consumer), Range.unbounded(), 10);
+                streamKey, Consumer.from(group, consumer), Range.unbounded(), streamsOption.maxStreamLength());
 
         for (PendingMessage pending : pendingMessages) {
             RecordId recordId = pending.getId();
