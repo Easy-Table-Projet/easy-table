@@ -1,12 +1,9 @@
 package org.example.easytable.reservation.service.queueing;
 
-<<<<<<< HEAD
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-=======
->>>>>>> d53d008828b57c0ac5dceef3232d5d8b12f345d9
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.easytable.common.utils.SerializerUtil;
