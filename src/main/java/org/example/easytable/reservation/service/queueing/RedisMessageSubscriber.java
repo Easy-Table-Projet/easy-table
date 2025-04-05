@@ -1,6 +1,7 @@
 package org.example.easytable.reservation.service.queueing;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,14 @@ import org.example.easytable.reservation.dto.response.ReservationCreateResDto;
 import org.example.easytable.reservation.service.ReservationService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.domain.Range;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.stream.Consumer;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.PendingMessage;
+import org.springframework.data.redis.connection.stream.PendingMessages;
 import org.springframework.data.redis.connection.stream.ReadOffset;
+import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.connection.stream.StreamOffset;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -51,6 +56,11 @@ public class RedisMessageSubscriber implements
 
             createConsumerGroup(streamKey);
             redisTemplate.opsForStream().trim(streamKey, streamsOption.maxStreamLength());
+
+            // 그룹별로 최초 lock을 획득한 consumer만 pending 처리
+            if (tryAcquireGroupLock(streamKey)) {
+                handlePendingMessages(streamKey);
+            }
 
             Subscription sub = listenerContainer.receive(
                     Consumer.from(groupOption.groupName(), groupOption.consumerName()),
@@ -102,4 +112,35 @@ public class RedisMessageSubscriber implements
         }
     }
 
+    private void handlePendingMessages(String streamKey) {
+        String group = groupOption.groupName();
+        String consumer = groupOption.consumerName();
+
+        PendingMessages pendingMessages = redisTemplate.opsForStream().pending(
+                streamKey, Consumer.from(group, consumer), Range.unbounded(), 10);
+
+        for (PendingMessage pending : pendingMessages) {
+            RecordId recordId = pending.getId();
+
+            // 1초 이상 Idle 상태인 메시지들을 claim
+            List<MapRecord<String, String, String>> claimed = redisTemplate.<String, String>opsForStream()
+                    .claim(streamKey, group, consumer, Duration.ofSeconds(1), recordId);
+
+            for (MapRecord<String, String, String> message : claimed) {
+                try {
+                    onMessage(message);
+                } catch (Exception e) {
+                    log.error("Failed to process pending message: {}", message.getId(), e);
+                }
+            }
+        }
+    }
+
+    private boolean tryAcquireGroupLock(String streamKey) {
+        String lockKey = "reservation:pending:lock:" + streamKey;
+        // 현재는 consumer name이 스레드 별로 분리되어 있지 않으니 나중에 분리될 때 groupOption.consumerName()를 변경할 것
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(lockKey, groupOption.consumerName(), Duration.ofSeconds(5));
+        return Boolean.TRUE.equals(success);
+    }
 }
