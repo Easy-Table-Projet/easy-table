@@ -21,13 +21,13 @@ import static org.springframework.data.redis.stream.StreamMessageListenerContain
 
 @Configuration
 public class RedisConfig {
-    private static final String TOPIC_NAME = "reservation:create";
+    private static final String TOPIC_NAME = "restaurant:stream";
 
     @Value("${spring.data.redis.host:localhost}")
     private String host;
     @Value("${spring.data.redis.port:6379}")
     private int port;
-    @Value("${redis.streams.consumer_group.size:50}")
+    @Value("${redis.streams.consumer_group.size:5}")
     private int consumerGroupSize;
     @Value("${redis.streams.consumer_group.poll-out-ms:10}")
     private int pollOutMillis;
